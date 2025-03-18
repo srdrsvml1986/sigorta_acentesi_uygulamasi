@@ -1,0 +1,525 @@
+/* Ana Renk Paleti - MaterialPro Tema */
+:root {
+  /* Ana renk - Mavi tonları */
+  --primary-color: #03c9d7;
+  --primary-hover: #00b0bd;
+  
+  /* İkincil renk - Koyu lacivert tonları */
+  --secondary-color: #0d2d55;
+  --secondary-hover: #07203f;
+  
+  /* Başarı rengi - Yeşil tonlar */
+  --success-color: #13deb9;
+  --success-hover: #0bc6a2;
+  
+  /* Tehlike rengi - Kırmızı tonlar */
+  --danger-color: #fa896b;
+  --danger-hover: #e86e50;
+  
+  /* Uyarı rengi - Turuncu tonlar */
+  --warning-color: #ffae1f;
+  --warning-hover: #e69500;
+  
+  /* Bilgi rengi - Açık mavi tonlar */
+  --info-color: #2962ff;
+  --info-hover: #1a53e9;
+  
+  /* Arka plan ve kenar renkleri */
+  --light-bg: #f6f9fc;
+  --border-color: #e5eaef;
+  
+  /* Metin renkleri */
+  --text-primary: #2a3547;
+  --text-secondary: #5a626c;
+  --text-light: #7c8a97;
+  --white: #ffffff;
+  --black: #000000;
+  
+  /* Gölgeler */
+  --box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  --hover-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Genel Konteyner Stilleri */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+}
+
+/* Başlık ve Düğme Yerleşimi */
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.header-actions h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Form Konteyner */
+.form-container {
+  background-color: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--box-shadow);
+  text-align: left;
+}
+
+.form-container h3 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+/* Form Grup Stilleri */
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -10px;
+  margin-right: -10px;
+  justify-content: flex-start;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 200px;
+  padding: 0 10px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: var(--white);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 168, 204, 0.2);
+  outline: none;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Tablo Stilleri */
+.table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+  background-color: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+  font-size: 14px;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+  background-color: var(--light-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  position: sticky;
+  top: 0;
+}
+
+.data-table tr:nth-child(even) {
+  background-color: var(--light-bg);
+}
+
+.data-table tr:hover {
+  background-color: rgba(3, 201, 215, 0.05);
+}
+
+/* Düğme Stilleri */
+.btn {
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  border: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover {
+  box-shadow: var(--hover-shadow);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  color: var(--white);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.btn-success:hover {
+  background-color: var(--success-hover);
+  color: var(--white);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--white);
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-hover);
+  color: var(--white);
+}
+
+.btn-edit {
+  background-color: var(--info-color);
+  color: var(--white);
+  margin-right: 5px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-edit:hover {
+  background-color: var(--info-hover);
+  color: var(--white);
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+  color: var(--white);
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-delete:hover {
+  background-color: var(--danger-hover);
+  color: var(--white);
+}
+
+/* İşlem Sütunu */
+.actions {
+  white-space: nowrap;
+  width: 150px;
+  text-align: center;
+}
+
+/* Yükleniyor ve Hata Mesajları */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--light-bg);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  padding: 15px;
+  background-color: rgba(239, 62, 62, 0.1);
+  color: var(--danger-color);
+  border: 1px solid rgba(239, 62, 62, 0.3);
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.access-denied {
+  padding: 15px;
+  background-color: rgba(246, 173, 85, 0.1);
+  color: #dd6b20;
+  border: 1px solid rgba(246, 173, 85, 0.3);
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Durum Rozetleri */
+.status-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.status-active {
+  background-color: rgba(19, 222, 185, 0.15);
+  color: var(--success-color);
+}
+
+.status-passive, .status-canceled {
+  background-color: rgba(250, 137, 107, 0.15);
+  color: var(--danger-color);
+}
+
+.status-suspended, .status-pending {
+  background-color: rgba(255, 174, 31, 0.15);
+  color: var(--warning-color);
+}
+
+.status-expired {
+  background-color: rgba(114, 132, 154, 0.15);
+  color: var(--text-secondary);
+}
+
+/* Finansal Özet Kartları */
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 200px;
+  background-color: var(--white);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: var(--box-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: left;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--hover-shadow);
+}
+
+.summary-card.income {
+  border-left: 5px solid var(--success-color);
+}
+
+.summary-card.expense {
+  border-left: 5px solid var(--danger-color);
+}
+
+.summary-card.balance.positive {
+  border-left: 5px solid var(--info-color);
+}
+
+.summary-card.balance.negative {
+  border-left: 5px solid var(--danger-color);
+}
+
+.summary-title {
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 10px;
+}
+
+.summary-amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+/* İşlem Satırları */
+.transaction-row.income .amount {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.transaction-row.expense .amount {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+/* Rozetler */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.badge.income {
+  background-color: rgba(56, 161, 105, 0.15);
+  color: var(--success-color);
+}
+
+.badge.expense {
+  background-color: rgba(239, 62, 62, 0.15);
+  color: var(--danger-color);
+}
+
+/* Filtre Konteyner */
+.filter-container {
+  background-color: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: var(--box-shadow);
+  text-align: left;
+}
+
+.filter-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.filter-form .form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.filter-form .form-group {
+  flex-basis: calc(25% - 20px);
+  min-width: 150px;
+}
+
+/* Duyarlı Tasarım */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header-actions h2 {
+    margin-bottom: 10px;
+  }
+  
+  .header-actions button {
+    margin-top: 10px;
+    width: 100%;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .form-row .form-group {
+    padding: 0;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .actions {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .actions button {
+    margin-bottom: 5px;
+    width: 100%;
+  }
+  
+  .btn-edit {
+    margin-right: 0;
+  }
+  
+  .summary-cards {
+    flex-direction: column;
+  }
+  
+  .filter-form .form-group {
+    flex-basis: 100%;
+  }
+} 
