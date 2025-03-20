@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
-import Login from './components/Login';
-import Register from './components/Register';
-import Customers from './components/Customers';
-import Policies from './components/Policies';
-import Agencies from './components/Agencies';
-import InsuranceCompanies from './components/InsuranceCompanies';
-import Accounts from './components/Accounts';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Link, useNavigate, Navigate } from "react-router-dom";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import Customers from "./components/Customers";
+import Policies from "./components/Policies";
+import Agencies from "./components/Agencies";
+import InsuranceCompanies from "./components/InsuranceCompanies";
+import Accounts from "./components/Accounts";
+import "./App.css";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,8 +16,8 @@ function App() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
     if (token) {
       setIsLoggedIn(true);
       setUserRole(role);
@@ -25,19 +25,19 @@ function App() {
   }, []);
 
   const handleLogin = (token, role) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', role);
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
     setIsLoggedIn(true);
     setUserRole(role);
-    navigate('/customers');
+    navigate("/customers");
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
     setIsLoggedIn(false);
     setUserRole(null);
-    navigate('/login');
+    navigate("/login");
   };
 
   const toggleMenu = () => {
@@ -58,7 +58,11 @@ function App() {
           )}
         </div>
         {isLoggedIn ? (
-          <nav className={menuOpen ? 'active' : ''}>
+          <nav className={menuOpen ? "active" : ""}>
+            <Link to="/accounts">
+              <span className="nav-icon">💰</span>
+              Finansal İşlemler
+            </Link>
             <Link to="/customers">
               <span className="nav-icon">👥</span>
               Müşteriler
@@ -74,10 +78,6 @@ function App() {
             <Link to="/insurance-companies">
               <span className="nav-icon">🏪</span>
               Sigorta Şirketleri
-            </Link>
-            <Link to="/accounts">
-              <span className="nav-icon">💰</span>
-              Finansal İşlemler
             </Link>
             <button onClick={handleLogout}>
               <span className="nav-icon">🚪</span>
@@ -98,27 +98,57 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route
             path="/customers"
-            element={isLoggedIn ? <Customers userRole={userRole} /> : <Navigate to="/login" />}
+            element={
+              isLoggedIn ? (
+                <Customers userRole={userRole} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
           <Route
             path="/policies"
-            element={isLoggedIn ? <Policies userRole={userRole} /> : <Navigate to="/login" />}
+            element={
+              isLoggedIn ? (
+                <Policies userRole={userRole} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
           <Route
             path="/agencies"
-            element={isLoggedIn ? <Agencies userRole={userRole} /> : <Navigate to="/login" />}
+            element={
+              isLoggedIn ? (
+                <Agencies userRole={userRole} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
           <Route
             path="/insurance-companies"
-            element={isLoggedIn ? <InsuranceCompanies userRole={userRole} /> : <Navigate to="/login" />}
+            element={
+              isLoggedIn ? (
+                <InsuranceCompanies userRole={userRole} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
           <Route
             path="/accounts"
-            element={isLoggedIn ? <Accounts userRole={userRole} /> : <Navigate to="/login" />}
+            element={
+              isLoggedIn ? (
+                <Accounts userRole={userRole} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
           <Route
             path="/"
-            element={<Navigate to={isLoggedIn ? "/customers" : "/login"} />}
+            element={<Navigate to={isLoggedIn ? "/accounts" : "/login"} />}
           />
         </Routes>
       </main>
