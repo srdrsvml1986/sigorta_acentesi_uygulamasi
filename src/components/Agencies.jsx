@@ -21,6 +21,16 @@ function Agencies({ userRole }) {
     website: '',
     status: 'active'
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchFilters, setSearchFilters] = useState({
+    name: true,
+    code: true,
+    email: true,
+    phone: true,
+    city: true,
+    taxNumber: true
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchAgencies();
@@ -158,6 +168,38 @@ function Agencies({ userRole }) {
     }
   };
 
+  const filteredAgencies = agencies.filter(agency => {
+    if (!searchTerm) return true;
+    
+    const searchValue = searchTerm.toLowerCase();
+    const matchConditions = [];
+    
+    if (searchFilters.name) {
+      matchConditions.push(
+        agency.name.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.code) {
+      matchConditions.push(
+        agency.code.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.email) {
+      matchConditions.push(agency.email.toLowerCase().includes(searchValue));
+    }
+    if (searchFilters.phone) {
+      matchConditions.push(agency.phone.includes(searchValue));
+    }
+    if (searchFilters.city && agency.city) {
+      matchConditions.push(agency.city.toLowerCase().includes(searchValue));
+    }
+    if (searchFilters.taxNumber && agency.tax_number) {
+      matchConditions.push(agency.tax_number.includes(searchValue));
+    }
+    
+    return matchConditions.some(condition => condition);
+  });
+
   if (loading) {
     return <div className="loading-container"><div className="loading-spinner"></div><p>Yükleniyor...</p></div>;
   }
@@ -187,6 +229,93 @@ function Agencies({ userRole }) {
         >
           Yeni Acente Ekle
         </button>
+      </div>
+
+      <div className="search-container">
+        <div className="search-wrapper">
+          <input
+            type="text"
+            placeholder="Acente ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+              title="Aramayı Temizle"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            className={`filter-button ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Arama Filtreleri"
+          >
+            <i className="fas fa-filter"></i>
+          </button>
+        </div>
+        
+        {showFilters && (
+          <div className="search-filters">
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.name}
+                onChange={(e) => setSearchFilters({...searchFilters, name: e.target.checked})}
+              />
+              Acente Adı
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.code}
+                onChange={(e) => setSearchFilters({...searchFilters, code: e.target.checked})}
+              />
+              Acente Kodu
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.email}
+                onChange={(e) => setSearchFilters({...searchFilters, email: e.target.checked})}
+              />
+              E-posta
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.phone}
+                onChange={(e) => setSearchFilters({...searchFilters, phone: e.target.checked})}
+              />
+              Telefon
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.city}
+                onChange={(e) => setSearchFilters({...searchFilters, city: e.target.checked})}
+              />
+              Şehir
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.taxNumber}
+                onChange={(e) => setSearchFilters({...searchFilters, taxNumber: e.target.checked})}
+              />
+              Vergi No
+            </label>
+          </div>
+        )}
+        
+        {searchTerm && (
+          <div className="search-results-info">
+            {filteredAgencies.length} sonuç bulundu
+          </div>
+        )}
       </div>
 
       <Modal
@@ -372,7 +501,7 @@ function Agencies({ userRole }) {
               </tr>
             </thead>
             <tbody>
-              {agencies.map((agency) => (
+              {filteredAgencies.map((agency) => (
                 <tr key={agency.id}>
                   <td>{agency.name}</td>
                   <td>{agency.code}</td>

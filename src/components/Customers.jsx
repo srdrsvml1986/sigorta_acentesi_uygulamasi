@@ -21,6 +21,14 @@ function Customers({ userRole }) {
   });
   const [formErrors, setFormErrors] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchFilters, setSearchFilters] = useState({
+    name: true,
+    email: true,
+    phone: true,
+    city: true,
+    identity: true
+  });
+  const [showFilters, setShowFilters] = useState(false);
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: 'ascending'
@@ -182,13 +190,33 @@ function Customers({ userRole }) {
     }
   };
 
-  const filteredCustomers = customers.filter(customer => 
-    customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm) ||
-    (customer.identity_number && customer.identity_number.includes(searchTerm))
-  );
+  const filteredCustomers = customers.filter(customer => {
+    if (!searchTerm) return true;
+    
+    const searchValue = searchTerm.toLowerCase();
+    const matchConditions = [];
+    
+    if (searchFilters.name) {
+      matchConditions.push(
+        customer.first_name.toLowerCase().includes(searchValue) ||
+        customer.last_name.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.email) {
+      matchConditions.push(customer.email.toLowerCase().includes(searchValue));
+    }
+    if (searchFilters.phone) {
+      matchConditions.push(customer.phone.includes(searchValue));
+    }
+    if (searchFilters.city && customer.city) {
+      matchConditions.push(customer.city.toLowerCase().includes(searchValue));
+    }
+    if (searchFilters.identity && customer.identity_number) {
+      matchConditions.push(customer.identity_number.includes(searchValue));
+    }
+    
+    return matchConditions.some(condition => condition);
+  });
 
   const sortedCustomers = [...filteredCustomers].sort((a, b) => {
     if (!sortConfig.key) return 0;
@@ -251,13 +279,82 @@ function Customers({ userRole }) {
       </div>
 
       <div className="search-container">
-        <input
-          type="text"
-          placeholder="Müşteri ara..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
+        <div className="search-wrapper">
+          <input
+            type="text"
+            placeholder="Müşteri ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+              title="Aramayı Temizle"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            className={`filter-button ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Arama Filtreleri"
+          >
+            <i className="fas fa-filter"></i>
+          </button>
+        </div>
+        
+        {showFilters && (
+          <div className="search-filters">
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.name}
+                onChange={(e) => setSearchFilters({...searchFilters, name: e.target.checked})}
+              />
+              Ad Soyad
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.email}
+                onChange={(e) => setSearchFilters({...searchFilters, email: e.target.checked})}
+              />
+              E-posta
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.phone}
+                onChange={(e) => setSearchFilters({...searchFilters, phone: e.target.checked})}
+              />
+              Telefon
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.city}
+                onChange={(e) => setSearchFilters({...searchFilters, city: e.target.checked})}
+              />
+              Şehir
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.identity}
+                onChange={(e) => setSearchFilters({...searchFilters, identity: e.target.checked})}
+              />
+              TC Kimlik No
+            </label>
+          </div>
+        )}
+        
+        {searchTerm && (
+          <div className="search-results-info">
+            {filteredCustomers.length} sonuç bulundu
+          </div>
+        )}
       </div>
 
       <Modal

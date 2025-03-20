@@ -15,6 +15,16 @@ const Policies = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);
   const [form] = Form.useForm();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchFilters, setSearchFilters] = useState({
+    policyNumber: true,
+    customerName: true,
+    insuranceType: true,
+    company: true,
+    agency: true,
+    status: true
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   const initialFormData = {
     policy_number: '',
@@ -265,6 +275,46 @@ const Policies = () => {
     },
   ];
 
+  const filteredPolicies = policies.filter(policy => {
+    if (!searchTerm) return true;
+    
+    const searchValue = searchTerm.toLowerCase();
+    const matchConditions = [];
+    
+    if (searchFilters.policyNumber) {
+      matchConditions.push(
+        policy.policy_number.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.customerName) {
+      matchConditions.push(
+        `${policy.customer.first_name} ${policy.customer.last_name}`.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.insuranceType) {
+      matchConditions.push(
+        policy.insurance_type.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.company) {
+      matchConditions.push(
+        policy.insurance_company.name.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.agency) {
+      matchConditions.push(
+        policy.agency.name.toLowerCase().includes(searchValue)
+      );
+    }
+    if (searchFilters.status) {
+      matchConditions.push(
+        policy.status.toLowerCase().includes(searchValue)
+      );
+    }
+    
+    return matchConditions.some(condition => condition);
+  });
+
   return (
     <div style={{ padding: '24px' }}>
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -276,9 +326,96 @@ const Policies = () => {
         </Button>
       </div>
 
+      <div className="search-container">
+        <div className="search-wrapper">
+          <input
+            type="text"
+            placeholder="Poliçe ara..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button
+              className="clear-search"
+              onClick={() => setSearchTerm('')}
+              title="Aramayı Temizle"
+            >
+              ✕
+            </button>
+          )}
+          <button
+            className={`filter-button ${showFilters ? 'active' : ''}`}
+            onClick={() => setShowFilters(!showFilters)}
+            title="Arama Filtreleri"
+          >
+            <i className="fas fa-filter"></i>
+          </button>
+        </div>
+        
+        {showFilters && (
+          <div className="search-filters">
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.policyNumber}
+                onChange={(e) => setSearchFilters({...searchFilters, policyNumber: e.target.checked})}
+              />
+              Poliçe No
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.customerName}
+                onChange={(e) => setSearchFilters({...searchFilters, customerName: e.target.checked})}
+              />
+              Müşteri Adı
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.insuranceType}
+                onChange={(e) => setSearchFilters({...searchFilters, insuranceType: e.target.checked})}
+              />
+              Sigorta Türü
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.company}
+                onChange={(e) => setSearchFilters({...searchFilters, company: e.target.checked})}
+              />
+              Sigorta Şirketi
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.agency}
+                onChange={(e) => setSearchFilters({...searchFilters, agency: e.target.checked})}
+              />
+              Acente
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={searchFilters.status}
+                onChange={(e) => setSearchFilters({...searchFilters, status: e.target.checked})}
+              />
+              Durum
+            </label>
+          </div>
+        )}
+        
+        {searchTerm && (
+          <div className="search-results-info">
+            {filteredPolicies.length} sonuç bulundu
+          </div>
+        )}
+      </div>
+
       <Table
         columns={columns}
-        dataSource={policies}
+        dataSource={filteredPolicies}
         rowKey="id"
         loading={loading}
         scroll={{ x: true }}
