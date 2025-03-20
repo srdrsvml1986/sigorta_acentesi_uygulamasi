@@ -8,7 +8,7 @@ const express = require('express');
       db.all('SELECT * FROM customers', (err, rows) => {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: 'Sunucu hatası' });
+          return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
         }
         res.json(rows);
       });
@@ -65,7 +65,7 @@ const express = require('express');
       db.run('DELETE FROM customers WHERE id = ?', [id], function (err) {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: 'Sunucu hatası' });
+          return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
         }
         if (this.changes === 0) {
           return res.status(404).json({ message: 'Müşteri bulunamadı' });

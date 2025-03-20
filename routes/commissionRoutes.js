@@ -15,7 +15,7 @@ router.get('/', authorize(['admin', 'manager']), (req, res) => {
   db.all(query, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     res.json(rows);
   });
@@ -28,7 +28,7 @@ router.get('/policy/:policyId', authorize(['admin', 'manager', 'agent']), (req, 
   db.all('SELECT * FROM commissions WHERE policyId = ?', [policyId], (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     res.json(rows);
   });
@@ -41,7 +41,7 @@ router.get('/:id', authorize(['admin', 'manager', 'agent']), (req, res) => {
   db.get('SELECT * FROM commissions WHERE id = ?', [id], (err, row) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     if (!row) {
       return res.status(404).json({ message: 'Komisyon kaydı bulunamadı' });
@@ -70,7 +70,7 @@ router.post('/', authorize(['admin', 'manager']), (req, res) => {
   db.get('SELECT * FROM policies WHERE id = ?', [policyId], (err, policy) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!policy) {
@@ -236,7 +236,7 @@ router.delete('/:id', authorize(['admin']), (req, res) => {
   db.get('SELECT * FROM commissions WHERE id = ?', [id], (err, commission) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!commission) {
@@ -246,7 +246,7 @@ router.delete('/:id', authorize(['admin']), (req, res) => {
     db.run('DELETE FROM commissions WHERE id = ?', [id], function (err) {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       
       // İlgili finansal işlemleri de sil
@@ -278,7 +278,7 @@ router.get('/financial/transactions', authorize(['admin', 'manager']), (req, res
   db.all('SELECT * FROM financial_transactions ORDER BY transactionDate DESC', (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     res.json(rows);
   });

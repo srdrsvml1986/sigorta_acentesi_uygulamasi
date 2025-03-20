@@ -11,7 +11,7 @@ router.get('/all', authorize(['admin']), (req, res) => {
   db.all('SELECT * FROM notifications ORDER BY createdAt DESC', (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     res.json(rows);
   });
@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
     (err, rows) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       res.json(rows);
     }
@@ -48,7 +48,7 @@ router.get('/unread', (req, res) => {
     (err, rows) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       res.json(rows);
     }
@@ -71,7 +71,7 @@ router.post('/', authorize(['admin', 'manager']), (req, res) => {
   db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!user) {
@@ -236,7 +236,7 @@ router.patch('/:id/read', (req, res) => {
     (err, notification) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       
       if (!notification) {
@@ -253,7 +253,7 @@ router.patch('/:id/read', (req, res) => {
         function (err) {
           if (err) {
             console.error(err);
-            return res.status(500).json({ message: 'Sunucu hatası' });
+            return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
           }
           
           res.json({ message: 'Bildirim okundu olarak işaretlendi' });
@@ -277,7 +277,7 @@ router.post('/mark-all-read', (req, res) => {
     function (err) {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       
       res.json({ 
@@ -306,7 +306,7 @@ router.delete('/:id', (req, res) => {
   db.run(query, params, function (err) {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (this.changes === 0) {

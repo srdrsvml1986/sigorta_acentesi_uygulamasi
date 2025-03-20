@@ -66,8 +66,6 @@ function Register() {
         <div className="form-group">
           <label htmlFor="role">Rol:</label>
           <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="agent">Ajan</option>
-            <option value="manager">Müdür</option>
             <option value="admin">Admin</option>
           </select>
         </div>

@@ -29,7 +29,7 @@ const express = require('express');
         );
       } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+error?.message });
       }
     });
 
@@ -44,7 +44,7 @@ const express = require('express');
       db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: 'Sunucu hatası' });
+          return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
         }
 
         if (!user) {
@@ -63,7 +63,7 @@ const express = require('express');
           }
         } catch (error) {
           console.error(error);
-          res.status(500).json({ message: 'Sunucu hatası' });
+          return res.status(500).json({ message: 'Sunucu hatası'+error?.message });
         }
       });
     });

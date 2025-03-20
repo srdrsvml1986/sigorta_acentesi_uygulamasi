@@ -1,921 +1,951 @@
-openapi: 3.0.0
-    info:
-      title: Sigorta Acentesi API
-      version: 1.0.0
-      description: REST API for managing insurance agency operations
-    servers:
-      - url: http://localhost:3000/api/v1
-        description: Development server
-    components:
-      securitySchemes:
-        bearerAuth:
-          type: http
-          scheme: bearer
-          bearerFormat: JWT
-      schemas:
-        User:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: User ID
-            username:
-              type: string
-              description: User username
-            role:
-              type: string
-              description: User role (admin, agent, manager)
-        Customer:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Customer ID
-            firstName:
-              type: string
-              description: Customer first name
-            lastName:
-              type: string
-              description: Customer last name
-            email:
-              type: string
-              description: Customer email
-            phone:
-              type: string
-              description: Customer phone
-            address:
-              type: string
-              description: Customer address
-            city:
-              type: string
-              description: Customer city
-            postalCode:
-              type: string
-              description: Customer postal code
-            birthDate:
-              type: string
-              format: date
-              description: Customer birth date
-            identityNumber:
-              type: string
-              description: Customer identity number
-        Policy:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Policy ID
-            customerId:
-              type: integer
-              description: Customer ID
-            policyNumber:
-              type: string
-              description: Policy number
-            insuranceType:
-              type: string
-              description: Insurance type
-            startDate:
-              type: string
-              format: date
-              description: Policy start date
-            endDate:
-              type: string
-              format: date
-              description: Policy end date
-            premium:
-              type: number
-              format: float
-              description: Policy premium
-            status:
-              type: string
-              description: Policy status (active, expired, cancelled)
-        Claim:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Claim ID
-            policyId:
-              type: integer
-              description: Policy ID
-            claimNumber:
-              type: string
-              description: Claim number
-            claimDate:
-              type: string
-              format: date
-              description: Claim date
-            description:
-              type: string
-              description: Claim description
-            damageAmount:
-              type: number
-              format: float
-              description: Damage amount
-            status:
-              type: string
-              description: Claim status (pending, approved, rejected, paid)
-            documents:
-              type: string
-              description: JSON string containing document file paths
-        Commission:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Commission ID
-            policyId:
-              type: integer
-              description: Policy ID
-            amount:
-              type: number
-              format: float
-              description: Commission amount
-            rate:
-              type: number
-              format: float
-              description: Commission rate
-            paymentDate:
-              type: string
-              format: date
-              description: Commission payment date
-            status:
-              type: string
-              description: Commission status (pending, paid)
-        Document:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Document ID
-            relatedType:
-              type: string
-              description: Related record type (customer, policy, claim)
-            relatedId:
-              type: integer
-              description: Related record ID
-            fileName:
-              type: string
-              description: Document file name
-            filePath:
-              type: string
-              description: Document file path
-            fileType:
-              type: string
-              description: Document MIME type
-            fileSize:
-              type: integer
-              description: Document size in bytes
-            uploadedBy:
-              type: integer
-              description: User ID who uploaded the document
-        Notification:
-          type: object
-          properties:
-            id:
-              type: integer
-              description: Notification ID
-            userId:
-              type: integer
-              description: User ID
-            title:
-              type: string
-              description: Notification title
-            message:
-              type: string
-              description: Notification message
-            type:
-              type: string
-              description: Notification type (email, sms, app)
-            status:
-              type: string
-              description: Notification status (read, unread)
-            sentAt:
-              type: string
-              format: date-time
-              description: Date and time when notification was sent
-            readAt:
-              type: string
-              format: date-time
-              description: Date and time when notification was read
-    security:
-      - bearerAuth: []
-    paths:
-      /users/register:
-        post:
-          summary: Register a new user
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    username:
-                      type: string
-                    password:
-                      type: string
-                    role:
-                      type: string
-                      enum: [admin, agent, manager]
-          responses:
-            '201':
-              description: User created successfully
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      userId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '500':
-              description: Internal server error
-      /users/login:
-        post:
-          summary: Login user and get JWT token
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    username:
-                      type: string
-                    password:
-                      type: string
-          responses:
-            '200':
-              description: Login successful
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      token:
-                        type: string
-                        description: JWT token
-                      userId:
-                        type: integer
-                      username:
-                        type: string
-                      role:
-                        type: string
-            '401':
-              description: Unauthorized - invalid credentials
-            '500':
-              description: Internal server error
-      /users/profile:
-        get:
-          summary: Get user profile
-          security:
-            - bearerAuth: []
-          responses:
-            '200':
-              description: User profile
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/User'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /customers:
-        get:
-          summary: List all customers
-          security:
-            - bearerAuth: []
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Customer'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Create a new customer
-          security:
-            - bearerAuth: []
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Customer'
-          responses:
-            '201':
-              description: Customer created
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      customerId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /customers/{id}:
-        put:
-          summary: Update a customer
-          security:
-            - bearerAuth: []
-          parameters:
-            - in: path
-              name: id
-              required: true
+openapi: 3.0.4
+info:
+  title: Sigorta Acentesi API
+  version: 1.0.0
+  description: REST API for managing insurance agency operations
+servers:
+  - url: https://sigortaapi.elacigdem.com/api/v1
+    description: Development server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: User ID
+        username:
+          type: string
+          description: User username
+        role:
+          type: string
+          description: User role (admin, agent, manager)
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Customer ID
+        firstName:
+          type: string
+          description: Customer first name
+        lastName:
+          type: string
+          description: Customer last name
+        email:
+          type: string
+          description: Customer email
+        phone:
+          type: string
+          description: Customer phone
+        address:
+          type: string
+          description: Customer address
+        city:
+          type: string
+          description: Customer city
+        postalCode:
+          type: string
+          description: Customer postal code
+        birthDate:
+          type: string
+          format: date
+          description: Customer birth date
+        identityNumber:
+          type: string
+          description: Customer identity number
+    Policy:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Policy ID
+        customerId:
+          type: integer
+          description: Customer ID
+        policyNumber:
+          type: string
+          description: Policy number
+        insuranceType:
+          type: string
+          description: Insurance type
+        startDate:
+          type: string
+          format: date
+          description: Policy start date
+        endDate:
+          type: string
+          format: date
+          description: Policy end date
+        premium:
+          type: number
+          format: float
+          description: Policy premium
+        status:
+          type: string
+          description: Policy status (active, expired, cancelled)
+    Claim:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Claim ID
+        policyId:
+          type: integer
+          description: Policy ID
+        claimNumber:
+          type: string
+          description: Claim number
+        claimDate:
+          type: string
+          format: date
+          description: Claim date
+        description:
+          type: string
+          description: Claim description
+        damageAmount:
+          type: number
+          format: float
+          description: Damage amount
+        status:
+          type: string
+          description: Claim status (pending, approved, rejected, paid)
+        documents:
+          type: string
+          description: JSON string containing document file paths
+    Commission:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Commission ID
+        policyId:
+          type: integer
+          description: Policy ID
+        amount:
+          type: number
+          format: float
+          description: Commission amount
+        rate:
+          type: number
+          format: float
+          description: Commission rate
+        paymentDate:
+          type: string
+          format: date
+          description: Commission payment date
+        status:
+          type: string
+          description: Commission status (pending, paid)
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Document ID
+        relatedType:
+          type: string
+          description: Related record type (customer, policy, claim)
+        relatedId:
+          type: integer
+          description: Related record ID
+        fileName:
+          type: string
+          description: Document file name
+        filePath:
+          type: string
+          description: Document file path
+        fileType:
+          type: string
+          description: Document MIME type
+        fileSize:
+          type: integer
+          description: Document size in bytes
+        uploadedBy:
+          type: integer
+          description: User ID who uploaded the document
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Notification ID
+        userId:
+          type: integer
+          description: User ID
+        title:
+          type: string
+          description: Notification title
+        message:
+          type: string
+          description: Notification message
+        type:
+          type: string
+          description: Notification type (email, sms, app)
+        status:
+          type: string
+          description: Notification status (read, unread)
+        sentAt:
+          type: string
+          format: date-time
+          description: Date and time when notification was sent
+        readAt:
+          type: string
+          format: date-time
+          description: Date and time when notification was read
+security:
+  - bearerAuth: []
+paths:
+  /users/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, agent, manager]
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
               schema:
-                type: integer
-              description: Customer ID
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Customer'
-          responses:
-            '200':
-              description: Customer updated
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Customer not found
-            '500':
-              description: Internal server error
-        delete:
-          summary: Delete a customer
-          security:
-            - bearerAuth: []
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Customer ID
-          responses:
-            '200':
-              description: Customer deleted
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Customer not found
-            '500':
-              description: Internal server error
-      /policies:
-        get:
-          summary: List all policies
-          security:
-            - bearerAuth: []
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Policy'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Create a new policy
-          security:
-            - bearerAuth: []
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Policy'
-          responses:
-            '201':
-              description: Policy created
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      policyId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /policies/{id}:
-        put:
-          summary: Update a policy
-          security:
-            - bearerAuth: []
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Policy ID
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Policy'
-          responses:
-            '200':
-              description: Policy updated
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Policy not found
-            '500':
-              description: Internal server error
-        delete:
-          summary: Delete a policy
-          security:
-            - bearerAuth: []
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Policy ID
-          responses:
-            '200':
-              description: Policy deleted
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Policy not found
-            '500':
-              description: Internal server error
-      /claims:
-        get:
-          summary: List all claims
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Claim'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Create a new claim
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Claim'
-          responses:
-            '201':
-              description: Claim created
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      claimId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /claims/{id}/status:
-        patch:
-          summary: Update claim status
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Claim ID
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    status:
-                      type: string
-                      enum: [pending, approved, rejected, paid]
-          responses:
-            '200':
-              description: Claim status updated
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Claim not found
-            '500':
-              description: Internal server error
-      /commissions:
-        get:
-          summary: List all commissions
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Commission'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Create a new commission
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Commission'
-          responses:
-            '201':
-              description: Commission created
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      commissionId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /commissions/{id}/status:
-        patch:
-          summary: Update commission status
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Commission ID
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    status:
-                      type: string
-                      enum: [pending, paid]
-                    paymentDate:
-                      type: string
-                      format: date
-          responses:
-            '200':
-              description: Commission status updated
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Commission not found
-            '500':
-              description: Internal server error
-      /documents:
-        get:
-          summary: List all documents
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Document'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Upload a new document
-          requestBody:
-            required: true
-            content:
-              multipart/form-data:
-                schema:
-                  type: object
-                  properties:
-                    file:
-                      type: string
-                      format: binary
-                    relatedType:
-                      type: string
-                      enum: [customer, policy, claim]
-                    relatedId:
-                      type: integer
-          responses:
-            '201':
-              description: Document uploaded
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      documentId:
-                        type: integer
-                      document:
-                        $ref: '#/components/schemas/Document'
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /documents/{id}/download:
-        get:
-          summary: Download a document
-          parameters:
-            - in: path
-              name: id
-              required: true
-              schema:
-                type: integer
-              description: Document ID
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/octet-stream:
-                  schema:
+                type: object
+                properties:
+                  message:
                     type: string
-                    format: binary
-            '401':
-              description: Unauthorized - missing or invalid token
-            '404':
-              description: Document not found
-            '500':
-              description: Internal server error
-      /notifications:
-        get:
-          summary: List user's notifications
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Notification'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-        post:
-          summary: Create a new notification
-          requestBody:
-            required: true
-            content:
-              application/json:
-                schema:
+                  userId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '500':
+          description: Internal server error
+  /users/login:
+    post:
+      summary: Login user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token
+                  userId:
+                    type: integer
+                  username:
+                    type: string
+                  role:
+                    type: string
+        '401':
+          description: Unauthorized - invalid credentials
+        '500':
+          description: Internal server error
+  /users/profile:
+    get:
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /customers:
+    get:
+      summary: List all customers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new customer
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  customerId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /customers/{id}:
+    put:
+      summary: Update a customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Customer ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Customer not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Customer ID
+      responses:
+        '200':
+          description: Customer deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Customer not found
+        '500':
+          description: Internal server error
+  /policies:
+    get:
+      summary: List all policies
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new policy
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+      responses:
+        '201':
+          description: Policy created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  policyId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /policies/{id}:
+    put:
+      summary: Update a policy
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Policy ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+      responses:
+        '200':
+          description: Policy updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Policy not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a policy
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Policy ID
+      responses:
+        '200':
+          description: Policy deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Policy not found
+        '500':
+          description: Internal server error
+  /claims:
+    get:
+      summary: List all claims
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Claim'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new claim
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Claim'
+      responses:
+        '201':
+          description: Claim created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  claimId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /claims/{id}/status:
+    patch:
+      summary: Update claim status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Claim ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, approved, rejected, paid]
+      responses:
+        '200':
+          description: Claim status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Claim not found
+        '500':
+          description: Internal server error
+  /commissions:
+    get:
+      summary: List all commissions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commission'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new commission
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Commission'
+      responses:
+        '201':
+          description: Commission created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  commissionId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /commissions/{id}/status:
+    patch:
+      summary: Update commission status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Commission ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, paid]
+                paymentDate:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Commission status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Commission not found
+        '500':
+          description: Internal server error
+  /documents:
+    get:
+      summary: List all documents
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Upload a new document
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                relatedType:
+                  type: string
+                  enum: [customer, policy, claim]
+                relatedId:
+                  type: integer
+      responses:
+        '201':
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  documentId:
+                    type: integer
+                  document:
+                    $ref: '#/components/schemas/Document'
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /documents/{id}/download:
+    get:
+      summary: Download a document
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Document ID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized - missing or invalid token
+        '404':
+          description: Document not found
+        '500':
+          description: Internal server error
+  /notifications:
+    get:
+      summary: List user's notifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new notification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                title:
+                  type: string
+                message:
+                  type: string
+                type:
+                  type: string
+                  enum: [email, sms, app]
+      responses:
+        '201':
+          description: Notification created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  notificationId:
+                    type: integer
+        '400':
+          description: Bad request - invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /notifications/mark-all-read:
+    post:
+      summary: Mark all notifications as read
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedCount:
+                    type: integer
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /reports/statistics:
+    get:
+      summary: Get general statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                  policies:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      active:
+                        type: integer
+                      expired:
+                        type: integer
+                  claims:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      totalDamage:
+                        type: number
+                  commissions:
+                    type: object
+                    properties:
+                      total:
+                        type: number
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /reports/sales:
+    get:
+      summary: Get sales reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: Start date for report
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: End date for report
+        - in: query
+          name: groupBy
+          schema:
+            type: string
+            enum: [day, month, year]
+          description: Group results by time period
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
                   type: object
                   properties:
-                    userId:
+                    policyCount:
                       type: integer
-                    title:
+                    totalPremium:
+                      type: number
+                    period:
                       type: string
-                    message:
-                      type: string
-                    type:
-                      type: string
-                      enum: [email, sms, app]
-          responses:
-            '201':
-              description: Notification created
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      notificationId:
-                        type: integer
-            '400':
-              description: Bad request - invalid input
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /notifications/mark-all-read:
-        post:
-          summary: Mark all notifications as read
-          responses:
-            '200':
-              description: All notifications marked as read
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-                      updatedCount:
-                        type: integer
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /reports/statistics:
-        get:
-          summary: Get general statistics
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      customers:
-                        type: object
-                        properties:
-                          total:
-                            type: integer
-                      policies:
-                        type: object
-                        properties:
-                          total:
-                            type: integer
-                          active:
-                            type: integer
-                          expired:
-                            type: integer
-                      claims:
-                        type: object
-                        properties:
-                          total:
-                            type: integer
-                          totalDamage:
-                            type: number
-                      commissions:
-                        type: object
-                        properties:
-                          total:
-                            type: number
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /reports/sales:
-        get:
-          summary: Get sales reports
-          parameters:
-            - in: query
-              name: startDate
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error
+  /reports/renewals:
+    get:
+      summary: Get policy renewals
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: days
+          schema:
+            type: integer
+          description: Days to expiration
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
               schema:
-                type: string
-                format: date
-              description: Start date for report
-            - in: query
-              name: endDate
-              schema:
-                type: string
-                format: date
-              description: End date for report
-            - in: query
-              name: groupBy
-              schema:
-                type: string
-                enum: [day, month, year]
-              description: Group results by time period
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        policyCount:
-                          type: integer
-                        totalPremium:
-                          type: number
-                        period:
-                          type: string
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
-      /reports/renewals:
-        get:
-          summary: Get policy renewals
-          parameters:
-            - in: query
-              name: days
-              schema:
-                type: integer
-              description: Days to expiration
-          responses:
-            '200':
-              description: Successful operation
-              content:
-                application/json:
-                  schema:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Policy'
-            '401':
-              description: Unauthorized - missing or invalid token
-            '500':
-              description: Internal server error
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal server error

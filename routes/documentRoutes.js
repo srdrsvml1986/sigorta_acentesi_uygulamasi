@@ -47,7 +47,7 @@ router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
   db.all('SELECT * FROM documents ORDER BY createdAt DESC', (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     res.json(rows);
   });
@@ -63,7 +63,7 @@ router.get('/related/:type/:id', authorize(['admin', 'manager', 'agent']), (req,
     (err, rows) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       res.json(rows);
     }
@@ -77,7 +77,7 @@ router.get('/:id', authorize(['admin', 'manager', 'agent']), (req, res) => {
   db.get('SELECT * FROM documents WHERE id = ?', [id], (err, row) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     if (!row) {
       return res.status(404).json({ message: 'Doküman bulunamadı' });
@@ -93,7 +93,7 @@ router.get('/:id/download', authorize(['admin', 'manager', 'agent']), (req, res)
   db.get('SELECT * FROM documents WHERE id = ?', [id], (err, document) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!document) {
@@ -204,7 +204,7 @@ router.delete('/:id', authorize(['admin', 'manager']), (req, res) => {
   db.get('SELECT * FROM documents WHERE id = ?', [id], (err, document) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!document) {
@@ -214,7 +214,7 @@ router.delete('/:id', authorize(['admin', 'manager']), (req, res) => {
     db.run('DELETE FROM documents WHERE id = ?', [id], function (err) {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       
       // Disk üzerindeki dosyayı sil

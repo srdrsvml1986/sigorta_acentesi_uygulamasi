@@ -9,35 +9,35 @@ router.get('/statistics', authorize(['admin', 'manager']), (req, res) => {
   db.get('SELECT COUNT(*) as customerCount FROM customers', (err, customerResult) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     // Poliçe sayısı
     db.get('SELECT COUNT(*) as policyCount FROM policies', (err, policyResult) => {
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası' });
+        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
       }
       
       // Aktif poliçe sayısı
       db.get('SELECT COUNT(*) as activePolicyCount FROM policies WHERE status = "active"', (err, activePolicyResult) => {
         if (err) {
           console.error(err);
-          return res.status(500).json({ message: 'Sunucu hatası' });
+          return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
         }
         
         // Hasar sayısı ve toplam tutar
         db.get('SELECT COUNT(*) as claimCount, SUM(damageAmount) as totalDamage FROM claims', (err, claimResult) => {
           if (err) {
             console.error(err);
-            return res.status(500).json({ message: 'Sunucu hatası' });
+            return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
           }
           
           // Toplam komisyon miktarı
           db.get('SELECT SUM(amount) as totalCommission FROM commissions', (err, commissionResult) => {
             if (err) {
               console.error(err);
-              return res.status(500).json({ message: 'Sunucu hatası' });
+              return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
             }
             
             res.json({
@@ -104,7 +104,7 @@ router.get('/sales', authorize(['admin', 'manager']), (req, res) => {
   db.all(query, params, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!['month', 'year', 'day'].includes(groupBy)) {
@@ -164,7 +164,7 @@ router.get('/claims', authorize(['admin', 'manager']), (req, res) => {
   db.all(query, params, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     res.json(rows);
@@ -213,7 +213,7 @@ router.get('/commissions', authorize(['admin', 'manager']), (req, res) => {
   db.all(query, params, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     if (!['month', 'year', 'day'].includes(groupBy)) {
@@ -268,7 +268,7 @@ router.get('/user-activities', authorize(['admin']), (req, res) => {
   db.all(query, params, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     res.json(rows);
@@ -300,7 +300,7 @@ router.get('/renewals', authorize(['admin', 'manager', 'agent']), (req, res) => 
   db.all(query, [futureDate, todayStr], (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     res.json(rows);
@@ -346,7 +346,7 @@ router.get('/agent-performance', authorize(['admin', 'manager']), (req, res) => 
   db.all(finalQuery, params, (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     res.json(rows);
@@ -369,7 +369,7 @@ router.get('/insurance-types', authorize(['admin', 'manager']), (req, res) => {
   db.all(query, [], (err, rows) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası' });
+      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
     }
     
     res.json(rows);
