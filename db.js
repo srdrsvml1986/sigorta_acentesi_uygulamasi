@@ -5,10 +5,10 @@ async function initializeDB() {
   try {
     // PostgreSQL bağlantı havuzu oluştur
     pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
+      host: process.env.DB_HOST || 'dpg-cve49bbv2p9s73djj420-a',
       port: process.env.DB_PORT || 5432,
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || '6hJm6^99n',
+      user: process.env.DB_USER || 'sigorta_user',
+      password: process.env.DB_PASSWORD || 'fJ3HeD3XxnXDk3e0iKnPI0kUjGbGUAhT',
       database: process.env.DB_NAME || 'sigorta',
     });
     

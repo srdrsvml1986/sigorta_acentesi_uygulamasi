@@ -5,7 +5,7 @@ const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 
-const jwtSecret = 'your-secret-key'; // Güvenli bir şekilde saklanmalı
+const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
 
 // Kullanıcı Kaydı
 router.post('/register', async (req, res) => {
