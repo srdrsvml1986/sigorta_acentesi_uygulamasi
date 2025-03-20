@@ -64,7 +64,10 @@ function Agencies({ userRole }) {
       setLoading(false);
     }
   };
-
+  const validateForm = () => {
+    // Implement form validation logic here
+    return true; // Placeholder return, actual implementation needed
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
