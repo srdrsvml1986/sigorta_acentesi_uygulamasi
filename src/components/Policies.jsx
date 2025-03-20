@@ -178,7 +178,10 @@ const Policies = () => {
       const formattedValues = {
         ...values,
         start_date: values.start_date.format('YYYY-MM-DD'),
-        end_date: values.end_date.format('YYYY-MM-DD')
+        end_date: values.end_date.format('YYYY-MM-DD'),
+        agency_id: values.agency_id ? parseInt(values.agency_id) : null,
+        customer_id: parseInt(values.customer_id),
+        insurance_company_id: parseInt(values.insurance_company_id)
       };
 
       const token = localStorage.getItem('token');
