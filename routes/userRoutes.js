@@ -1,6 +1,7 @@
 const express = require('express');
     const router = express.Router();
-    const bcrypt = require('bcrypt');
+    //const bcrypt = require('bcrypt');
+    const argon2 = require('argon2');
     const jwt = require('jsonwebtoken');
     const db = require('../db');
 
@@ -15,7 +16,7 @@ const express = require('express');
       }
 
       try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await argon2.hash(password, 10);
         db.run(
           'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
           [username, hashedPassword, role || 'agent'],
@@ -52,7 +53,7 @@ const express = require('express');
         }
 
         try {
-          const passwordMatch = await bcrypt.compare(password, user.password);
+          const passwordMatch = await argon2.compare(password, user.password);
           if (passwordMatch) {
             const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, jwtSecret, {
               expiresIn: '1h',
