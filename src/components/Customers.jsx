@@ -9,11 +9,15 @@ function Customers({ userRole }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
-    address: ''
+    address: '',
+    city: '',
+    postal_code: '',
+    birth_date: '',
+    identity_number: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,11 +69,15 @@ function Customers({ userRole }) {
 
   const resetForm = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
+      first_name: '',
+      last_name: '',
       email: '',
       phone: '',
-      address: ''
+      address: '',
+      city: '',
+      postal_code: '',
+      birth_date: '',
+      identity_number: ''
     });
     setEditingCustomer(null);
   };
@@ -133,11 +141,15 @@ function Customers({ userRole }) {
 
   const handleEdit = (customer) => {
     setFormData({
-      firstName: customer.firstName,
-      lastName: customer.lastName,
+      first_name: customer.first_name,
+      last_name: customer.last_name,
       email: customer.email,
       phone: customer.phone,
-      address: customer.address || ''
+      address: customer.address || '',
+      city: customer.city || '',
+      postal_code: customer.postal_code || '',
+      birth_date: customer.birth_date || '',
+      identity_number: customer.identity_number || ''
     });
     setEditingCustomer(customer);
     setIsModalOpen(true);
@@ -171,10 +183,11 @@ function Customers({ userRole }) {
   };
 
   const filteredCustomers = customers.filter(customer => 
-    customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
+    customer.phone.includes(searchTerm) ||
+    (customer.identity_number && customer.identity_number.includes(searchTerm))
   );
 
   const sortedCustomers = [...filteredCustomers].sort((a, b) => {
@@ -257,23 +270,23 @@ function Customers({ userRole }) {
       >
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="firstName">Ad</label>
+            <label htmlFor="first_name">Ad</label>
             <input
               type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
+              id="first_name"
+              name="first_name"
+              value={formData.first_name}
               onChange={handleInputChange}
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="lastName">Soyad</label>
+            <label htmlFor="last_name">Soyad</label>
             <input
               type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
+              id="last_name"
+              name="last_name"
+              value={formData.last_name}
               onChange={handleInputChange}
               required
             />
@@ -311,6 +324,48 @@ function Customers({ userRole }) {
               onChange={handleInputChange}
             ></textarea>
           </div>
+          <div className="form-group">
+            <label htmlFor="city">Şehir</label>
+            <input
+              type="text"
+              id="city"
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="postal_code">Posta Kodu</label>
+            <input
+              type="text"
+              id="postal_code"
+              name="postal_code"
+              value={formData.postal_code}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="birth_date">Doğum Tarihi</label>
+            <input
+              type="date"
+              id="birth_date"
+              name="birth_date"
+              value={formData.birth_date}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="identity_number">TC Kimlik No</label>
+            <input
+              type="text"
+              id="identity_number"
+              name="identity_number"
+              value={formData.identity_number}
+              onChange={handleInputChange}
+              maxLength="11"
+              pattern="[0-9]{11}"
+            />
+          </div>
           <div className="form-actions">
             <button type="submit" className="btn btn-success">
               {editingCustomer ? 'Güncelle' : 'Ekle'}
@@ -336,24 +391,32 @@ function Customers({ userRole }) {
           <table className="data-table">
             <thead>
               <tr>
-                <th onClick={() => requestSort('firstName')} className="sortable">
-                  Ad {sortConfig.key === 'firstName' && (
+                <th onClick={() => requestSort('first_name')} className="sortable">
+                  Ad {sortConfig.key === 'first_name' && (
                     <span>{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
                   )}
                 </th>
-                <th>Soyad</th>
+                <th onClick={() => requestSort('last_name')} className="sortable">
+                  Soyad {sortConfig.key === 'last_name' && (
+                    <span>{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
+                  )}
+                </th>
                 <th>E-posta</th>
                 <th>Telefon</th>
+                <th>Şehir</th>
+                <th>TC Kimlik No</th>
                 <th>İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {currentCustomers.map((customer) => (
                 <tr key={customer.id}>
-                  <td>{customer.firstName}</td>
-                  <td>{customer.lastName}</td>
+                  <td>{customer.first_name}</td>
+                  <td>{customer.last_name}</td>
                   <td>{customer.email}</td>
                   <td>{customer.phone}</td>
+                  <td>{customer.city}</td>
+                  <td>{customer.identity_number}</td>
                   <td className="actions">
                     <button 
                       className="btn btn-edit" 

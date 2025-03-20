@@ -11,16 +11,16 @@ function InsuranceCompanies({ userRole }) {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    contactPerson: '',
+    contact_person: '',
     phone: '',
     email: '',
     address: '',
-    taxNumber: '',
-    foundationYear: '',
+    tax_number: '',
+    foundation_year: '',
     website: '',
-    commissionRate: '',
-    paymentTerms: '',
-    contractDate: '',
+    commission_rate: '',
+    payment_terms: '',
+    contract_date: '',
     status: 'active'
   });
 
@@ -67,16 +67,16 @@ function InsuranceCompanies({ userRole }) {
     setFormData({
       name: '',
       code: '',
-      contactPerson: '',
+      contact_person: '',
       phone: '',
       email: '',
       address: '',
-      taxNumber: '',
-      foundationYear: '',
+      tax_number: '',
+      foundation_year: '',
       website: '',
-      commissionRate: '',
-      paymentTerms: '',
-      contractDate: '',
+      commission_rate: '',
+      payment_terms: '',
+      contract_date: '',
       status: 'active'
     });
     setEditingCompany(null);
@@ -120,16 +120,16 @@ function InsuranceCompanies({ userRole }) {
     setFormData({
       name: company.name,
       code: company.code,
-      contactPerson: company.contactPerson || '',
+      contact_person: company.contact_person || '',
       phone: company.phone,
       email: company.email,
       address: company.address || '',
-      taxNumber: company.taxNumber || '',
-      foundationYear: company.foundationYear || '',
+      tax_number: company.tax_number || '',
+      foundation_year: company.foundation_year || '',
       website: company.website || '',
-      commissionRate: company.commissionRate || '',
-      paymentTerms: company.paymentTerms || '',
-      contractDate: company.contractDate || '',
+      commission_rate: company.commission_rate || '',
+      payment_terms: company.payment_terms || '',
+      contract_date: company.contract_date || '',
       status: company.status || 'active'
     });
     setEditingCompany(company);
@@ -230,12 +230,12 @@ function InsuranceCompanies({ userRole }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="contactPerson">İlgili Kişi</label>
+              <label htmlFor="contact_person">İlgili Kişi</label>
               <input
                 type="text"
-                id="contactPerson"
-                name="contactPerson"
-                value={formData.contactPerson}
+                id="contact_person"
+                name="contact_person"
+                value={formData.contact_person}
                 onChange={handleInputChange}
               />
             </div>
@@ -248,6 +248,7 @@ function InsuranceCompanies({ userRole }) {
                 value={formData.phone}
                 onChange={handleInputChange}
                 required
+                pattern="[0-9]{10}"
               />
             </div>
           </div>
@@ -272,6 +273,7 @@ function InsuranceCompanies({ userRole }) {
                 name="website"
                 value={formData.website}
                 onChange={handleInputChange}
+                placeholder="https://"
               />
             </div>
           </div>
@@ -283,27 +285,27 @@ function InsuranceCompanies({ userRole }) {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-            ></textarea>
+            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="taxNumber">Vergi Numarası</label>
+              <label htmlFor="tax_number">Vergi Numarası</label>
               <input
                 type="text"
-                id="taxNumber"
-                name="taxNumber"
-                value={formData.taxNumber}
+                id="tax_number"
+                name="tax_number"
+                value={formData.tax_number}
                 onChange={handleInputChange}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="foundationYear">Kuruluş Yılı</label>
+              <label htmlFor="foundation_year">Kuruluş Yılı</label>
               <input
                 type="number"
-                id="foundationYear"
-                name="foundationYear"
-                value={formData.foundationYear}
+                id="foundation_year"
+                name="foundation_year"
+                value={formData.foundation_year}
                 onChange={handleInputChange}
                 min="1900"
                 max={new Date().getFullYear()}
@@ -313,25 +315,25 @@ function InsuranceCompanies({ userRole }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="commissionRate">Komisyon Oranı (%)</label>
+              <label htmlFor="commission_rate">Komisyon Oranı (%)</label>
               <input
                 type="number"
-                id="commissionRate"
-                name="commissionRate"
-                value={formData.commissionRate}
+                id="commission_rate"
+                name="commission_rate"
+                value={formData.commission_rate}
                 onChange={handleInputChange}
+                step="0.01"
                 min="0"
                 max="100"
-                step="0.01"
               />
             </div>
             <div className="form-group">
-              <label htmlFor="contractDate">Sözleşme Tarihi</label>
+              <label htmlFor="contract_date">Sözleşme Tarihi</label>
               <input
                 type="date"
-                id="contractDate"
-                name="contractDate"
-                value={formData.contractDate}
+                id="contract_date"
+                name="contract_date"
+                value={formData.contract_date}
                 onChange={handleInputChange}
               />
             </div>
@@ -339,13 +341,13 @@ function InsuranceCompanies({ userRole }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="paymentTerms">Ödeme Koşulları</label>
+              <label htmlFor="payment_terms">Ödeme Koşulları</label>
               <textarea
-                id="paymentTerms"
-                name="paymentTerms"
-                value={formData.paymentTerms}
+                id="payment_terms"
+                name="payment_terms"
+                value={formData.payment_terms}
                 onChange={handleInputChange}
-              ></textarea>
+              />
             </div>
             <div className="form-group">
               <label htmlFor="status">Durum</label>
@@ -357,6 +359,7 @@ function InsuranceCompanies({ userRole }) {
               >
                 <option value="active">Aktif</option>
                 <option value="passive">Pasif</option>
+                <option value="suspended">Askıya Alınmış</option>
               </select>
             </div>
           </div>
@@ -391,6 +394,7 @@ function InsuranceCompanies({ userRole }) {
                 <th>İlgili Kişi</th>
                 <th>Telefon</th>
                 <th>E-posta</th>
+                <th>Komisyon Oranı</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
               </tr>
@@ -400,10 +404,16 @@ function InsuranceCompanies({ userRole }) {
                 <tr key={company.id}>
                   <td>{company.name}</td>
                   <td>{company.code}</td>
-                  <td>{company.contactPerson}</td>
+                  <td>{company.contact_person}</td>
                   <td>{company.phone}</td>
                   <td>{company.email}</td>
-                  <td>{company.status === 'active' ? 'Aktif' : 'Pasif'}</td>
+                  <td>{company.commission_rate ? `%${company.commission_rate}` : '-'}</td>
+                  <td>
+                    <span className={`status-badge status-${company.status}`}>
+                      {company.status === 'active' ? 'Aktif' : 
+                       company.status === 'passive' ? 'Pasif' : 'Askıda'}
+                    </span>
+                  </td>
                   <td className="actions">
                     <button 
                       className="btn btn-edit" 

@@ -16,15 +16,15 @@ router.get('/', authorize(['admin', 'manager', 'agent']), async (req, res) => {
 
 // Yeni Müşteri Oluştur
 router.post('/', authorize(['admin', 'manager']), async (req, res) => {
-  const { firstName, lastName, email, phone } = req.body;
-  if (!firstName || !lastName || !email || !phone) {
-    return res.status(400).json({ message: 'Tüm alanları doldurun' });
+  const { first_name, last_name, email, phone, address, city, postal_code, birth_date, identity_number } = req.body;
+  if (!first_name || !last_name || !email || !phone) {
+    return res.status(400).json({ message: 'Zorunlu alanları doldurun' });
   }
 
   try {
     const result = await db.query(
-      'INSERT INTO customers (firstName, lastName, email, phone) VALUES ($1, $2, $3, $4) RETURNING id',
-      [firstName, lastName, email, phone]
+      'INSERT INTO customers (first_name, last_name, email, phone, address, city, postal_code, birth_date, identity_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      [first_name, last_name, email, phone, address, city, postal_code, birth_date, identity_number]
     );
     res.status(201).json({ 
       message: 'Müşteri başarıyla oluşturuldu', 
@@ -42,16 +42,20 @@ router.post('/', authorize(['admin', 'manager']), async (req, res) => {
 // Belirli Bir Müşteriyi Güncelle
 router.put('/:id', authorize(['admin', 'manager']), async (req, res) => {
   const { id } = req.params;
-  const { firstName, lastName, email, phone } = req.body;
+  const { first_name, last_name, email, phone, address, city, postal_code, birth_date, identity_number } = req.body;
 
-  if (!firstName || !lastName || !email || !phone) {
-    return res.status(400).json({ message: 'Tüm alanları doldurun' });
+  if (!first_name || !last_name || !email || !phone) {
+    return res.status(400).json({ message: 'Zorunlu alanları doldurun' });
   }
 
   try {
     const result = await db.query(
-      'UPDATE customers SET firstName = $1, lastName = $2, email = $3, phone = $4 WHERE id = $5 RETURNING id',
-      [firstName, lastName, email, phone, id]
+      `UPDATE customers 
+       SET first_name = $1, last_name = $2, email = $3, phone = $4, 
+           address = $5, city = $6, postal_code = $7, birth_date = $8, 
+           identity_number = $9, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $10 RETURNING id`,
+      [first_name, last_name, email, phone, address, city, postal_code, birth_date, identity_number, id]
     );
 
     if (result.rowCount === 0) {

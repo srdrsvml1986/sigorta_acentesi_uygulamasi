@@ -1,34 +1,77 @@
 const { Pool } = require('pg');
+const sql = require('mssql');
+const mariadb = require('mariadb');
 
-let pool;
+let dbConnection;
 
 async function initializeDB() {
+  const dbType = process.env.DB_TYPE || 'postgres'; // postgres, mssql, mariadb
+
   try {
-    // PostgreSQL bağlantı havuzu oluştur
-    pool = new Pool({
-      host: process.env.DB_HOST || 'dpg-cve49bbv2p9s73djj420-a',
-      port: process.env.DB_PORT || 5432,
-      user: process.env.DB_USER || 'sigorta_user',
-      password: process.env.DB_PASSWORD || 'fJ3HeD3XxnXDk3e0iKnPI0kUjGbGUAhT',
-      database: process.env.DB_NAME || 'sigorta',
-    });
-    
-    console.log('PostgreSQL veritabanına başarıyla bağlandı');
-    
-    // Tabloları oluştur
-    await createTables();
-    
-    return pool;
+    switch (dbType.toLowerCase()) {
+      case 'postgres':
+        dbConnection = await initializePostgres();
+        break;
+      case 'mssql':
+        dbConnection = await initializeMSSQL();
+        break;
+      case 'mariadb':
+        dbConnection = await initializeMariaDB();
+        break;
+      default:
+        throw new Error('Desteklenmeyen veritabanı türü');
+    }
+
+    console.log(`${dbType} veritabanına başarıyla bağlandı`);
+    await createTables(dbType);
+    return dbConnection;
   } catch (err) {
     console.error('Veritabanına bağlanılamadı:', err.message);
     throw err;
   }
 }
 
-async function createTables() {
+async function initializePostgres() {
+  const pool = new Pool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 5432,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+  return { type: 'postgres', connection: pool };
+}
+
+async function initializeMSSQL() {
+  const config = {
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    options: {
+      encrypt: true,
+      trustServerCertificate: true,
+    }
+  };
+  const pool = await sql.connect(config);
+  return { type: 'mssql', connection: pool };
+}
+
+async function initializeMariaDB() {
+  const pool = mariadb.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+  return { type: 'mariadb', connection: pool };
+}
+
+async function createTables(dbType) {
   try {
     // Kullanıcılar tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
@@ -38,7 +81,7 @@ async function createTables() {
     `);
 
     // Finansal işlemler tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS transactions (
         id SERIAL PRIMARY KEY,
         date DATE NOT NULL,
@@ -56,7 +99,7 @@ async function createTables() {
     `);
 
     // Acente tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS agencies (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -76,7 +119,7 @@ async function createTables() {
     `);
 
     // Sigorta şirketleri tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS insurance_companies (
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -98,7 +141,7 @@ async function createTables() {
     `);
 
     // Müşteriler tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
         first_name VARCHAR(50),
@@ -116,7 +159,7 @@ async function createTables() {
     `);
 
     // Poliçeler tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS policies (
         id SERIAL PRIMARY KEY,
         customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
@@ -132,7 +175,7 @@ async function createTables() {
     `);
 
     // Hasar ve Talep Yönetimi Tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS claims (
         id SERIAL PRIMARY KEY,
         policy_id INTEGER REFERENCES policies(id) ON DELETE SET NULL,
@@ -148,7 +191,7 @@ async function createTables() {
     `);
 
     // Komisyon ve Finans Yönetimi Tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS commissions (
         id SERIAL PRIMARY KEY,
         policy_id INTEGER REFERENCES policies(id) ON DELETE SET NULL,
@@ -162,7 +205,7 @@ async function createTables() {
     `);
 
     // Doküman ve Dosya Yönetimi Tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS documents (
         id SERIAL PRIMARY KEY,
         related_type VARCHAR(20),
@@ -178,7 +221,7 @@ async function createTables() {
     `);
 
     // Bildirim ve İletişim Sistemi Tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS notifications (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -193,7 +236,7 @@ async function createTables() {
     `);
 
     // Raporlama ve Analitik için log tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS activity_logs (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
@@ -207,7 +250,7 @@ async function createTables() {
     `);
 
     // Entegrasyon Kayıtları Tablosu
-    await pool.query(`
+    await dbConnection.connection.query(`
       CREATE TABLE IF NOT EXISTS integration_logs (
         id SERIAL PRIMARY KEY,
         integration_type VARCHAR(50),
@@ -227,17 +270,42 @@ async function createTables() {
 
 // Query fonksiyonu
 async function query(text, params) {
-  if (!pool) {
+  if (!dbConnection) {
     await initializeDB();
   }
-  return pool.query(text, params);
+
+  try {
+    switch (dbConnection.type) {
+      case 'postgres':
+        return await dbConnection.connection.query(text, params);
+      case 'mssql':
+        return await dbConnection.connection.request().query(text);
+      case 'mariadb':
+        return await dbConnection.connection.query(text, params);
+      default:
+        throw new Error('Desteklenmeyen veritabanı türü');
+    }
+  } catch (err) {
+    console.error('Sorgu çalıştırılırken hata:', err);
+    throw err;
+  }
 }
 
 // Veritabanı bağlantısını kapatır
 async function close() {
   try {
-    if (pool) {
-      await pool.end();
+    if (dbConnection) {
+      switch (dbConnection.type) {
+        case 'postgres':
+          await dbConnection.connection.end();
+          break;
+        case 'mssql':
+          await dbConnection.connection.close();
+          break;
+        case 'mariadb':
+          await dbConnection.connection.end();
+          break;
+      }
       console.log('Veritabanı bağlantısı kapatıldı');
     }
   } catch (err) {

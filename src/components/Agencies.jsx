@@ -11,13 +11,13 @@ function Agencies({ userRole }) {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    ownerName: '',
+    owner_name: '',
     phone: '',
     email: '',
     address: '',
-    taxNumber: '',
-    foundationYear: '',
-    employeeCount: '',
+    tax_number: '',
+    foundation_year: '',
+    employee_count: '',
     website: '',
     status: 'active'
   });
@@ -65,13 +65,13 @@ function Agencies({ userRole }) {
     setFormData({
       name: '',
       code: '',
-      ownerName: '',
+      owner_name: '',
       phone: '',
       email: '',
       address: '',
-      taxNumber: '',
-      foundationYear: '',
-      employeeCount: '',
+      tax_number: '',
+      foundation_year: '',
+      employee_count: '',
       website: '',
       status: 'active'
     });
@@ -117,13 +117,13 @@ function Agencies({ userRole }) {
     setFormData({
       name: agency.name,
       code: agency.code,
-      ownerName: agency.ownerName,
+      owner_name: agency.owner_name,
       phone: agency.phone,
       email: agency.email,
       address: agency.address || '',
-      taxNumber: agency.taxNumber || '',
-      foundationYear: agency.foundationYear || '',
-      employeeCount: agency.employeeCount || '',
+      tax_number: agency.tax_number || '',
+      foundation_year: agency.foundation_year || '',
+      employee_count: agency.employee_count || '',
       website: agency.website || '',
       status: agency.status || 'active'
     });
@@ -197,7 +197,7 @@ function Agencies({ userRole }) {
         }}
         title={editingAgency ? 'Acente Düzenle' : 'Yeni Acente Ekle'}
       >
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="form">
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="name">Acente Adı</label>
@@ -225,31 +225,16 @@ function Agencies({ userRole }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="ownerName">Acente Sahibi</label>
+              <label htmlFor="owner_name">Acente Sahibi</label>
               <input
                 type="text"
-                id="ownerName"
-                name="ownerName"
-                value={formData.ownerName}
+                id="owner_name"
+                name="owner_name"
+                value={formData.owner_name}
                 onChange={handleInputChange}
                 required
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="foundationYear">Kuruluş Yılı</label>
-              <input
-                type="number"
-                id="foundationYear"
-                name="foundationYear"
-                value={formData.foundationYear}
-                onChange={handleInputChange}
-                min="1900"
-                max={new Date().getFullYear()}
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
             <div className="form-group">
               <label htmlFor="phone">Telefon</label>
               <input
@@ -259,8 +244,12 @@ function Agencies({ userRole }) {
                 value={formData.phone}
                 onChange={handleInputChange}
                 required
+                pattern="[0-9]{10}"
               />
             </div>
+          </div>
+
+          <div className="form-row">
             <div className="form-group">
               <label htmlFor="email">E-posta</label>
               <input
@@ -272,6 +261,17 @@ function Agencies({ userRole }) {
                 required
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="website">Web Sitesi</label>
+              <input
+                type="url"
+                id="website"
+                name="website"
+                value={formData.website}
+                onChange={handleInputChange}
+                placeholder="https://"
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -281,42 +281,44 @@ function Agencies({ userRole }) {
               name="address"
               value={formData.address}
               onChange={handleInputChange}
-            ></textarea>
+            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="taxNumber">Vergi Numarası</label>
+              <label htmlFor="tax_number">Vergi Numarası</label>
               <input
                 type="text"
-                id="taxNumber"
-                name="taxNumber"
-                value={formData.taxNumber}
+                id="tax_number"
+                name="tax_number"
+                value={formData.tax_number}
                 onChange={handleInputChange}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="employeeCount">Çalışan Sayısı</label>
+              <label htmlFor="foundation_year">Kuruluş Yılı</label>
               <input
                 type="number"
-                id="employeeCount"
-                name="employeeCount"
-                value={formData.employeeCount}
+                id="foundation_year"
+                name="foundation_year"
+                value={formData.foundation_year}
                 onChange={handleInputChange}
-                min="1"
+                min="1900"
+                max={new Date().getFullYear()}
               />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="website">Web Sitesi</label>
+              <label htmlFor="employee_count">Çalışan Sayısı</label>
               <input
-                type="url"
-                id="website"
-                name="website"
-                value={formData.website}
+                type="number"
+                id="employee_count"
+                name="employee_count"
+                value={formData.employee_count}
                 onChange={handleInputChange}
+                min="1"
               />
             </div>
             <div className="form-group">
@@ -329,6 +331,7 @@ function Agencies({ userRole }) {
               >
                 <option value="active">Aktif</option>
                 <option value="passive">Pasif</option>
+                <option value="suspended">Askıya Alınmış</option>
               </select>
             </div>
           </div>
@@ -360,9 +363,10 @@ function Agencies({ userRole }) {
               <tr>
                 <th>Acente Adı</th>
                 <th>Kod</th>
-                <th>Sahibi</th>
+                <th>Acente Sahibi</th>
                 <th>Telefon</th>
                 <th>E-posta</th>
+                <th>Çalışan Sayısı</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
               </tr>
@@ -372,10 +376,16 @@ function Agencies({ userRole }) {
                 <tr key={agency.id}>
                   <td>{agency.name}</td>
                   <td>{agency.code}</td>
-                  <td>{agency.ownerName}</td>
+                  <td>{agency.owner_name}</td>
                   <td>{agency.phone}</td>
                   <td>{agency.email}</td>
-                  <td>{agency.status === 'active' ? 'Aktif' : 'Pasif'}</td>
+                  <td>{agency.employee_count || '-'}</td>
+                  <td>
+                    <span className={`status-badge status-${agency.status}`}>
+                      {agency.status === 'active' ? 'Aktif' : 
+                       agency.status === 'passive' ? 'Pasif' : 'Askıda'}
+                    </span>
+                  </td>
                   <td className="actions">
                     <button 
                       className="btn btn-edit" 
