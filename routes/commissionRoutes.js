@@ -12,7 +12,7 @@ router.get('/', authorize(['admin', 'manager']), (req, res) => {
     JOIN customers cu ON p.customerId = cu.id
   `;
   
-  db.query(query, (err, rows) => {
+  db.all(query, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -25,7 +25,7 @@ router.get('/', authorize(['admin', 'manager']), (req, res) => {
 router.get('/policy/:policyId', authorize(['admin', 'manager', 'agent']), (req, res) => {
   const { policyId } = req.params;
   
-  db.query('SELECT * FROM commissions WHERE policyId = ?', [policyId], (err, rows) => {
+  db.all('SELECT * FROM commissions WHERE policyId = ?', [policyId], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -275,7 +275,7 @@ router.delete('/:id', authorize(['admin']), (req, res) => {
 
 // Finansal İşlemleri Listele
 router.get('/financial/transactions', authorize(['admin', 'manager']), (req, res) => {
-  db.query('SELECT * FROM financial_transactions ORDER BY transactionDate DESC', (err, rows) => {
+  db.all('SELECT * FROM financial_transactions ORDER BY transactionDate DESC', (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });

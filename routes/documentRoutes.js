@@ -44,7 +44,7 @@ const upload = multer({
 
 // Tüm Dokümanları Listele
 router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
-  db.query('SELECT * FROM documents ORDER BY createdAt DESC', (err, rows) => {
+  db.all('SELECT * FROM documents ORDER BY createdAt DESC', (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -57,7 +57,7 @@ router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
 router.get('/related/:type/:id', authorize(['admin', 'manager', 'agent']), (req, res) => {
   const { type, id } = req.params;
   
-  db.query(
+  db.all(
     'SELECT * FROM documents WHERE relatedType = ? AND relatedId = ? ORDER BY createdAt DESC', 
     [type, id], 
     (err, rows) => {

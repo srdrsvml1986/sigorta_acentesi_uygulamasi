@@ -7,33 +7,32 @@ const { authorize } = require('../middleware/authMiddleware');
 // const smsService = require('../services/smsService');
 
 // Tüm Bildirimleri Listele (Yönetici)
-router.get('/all', authorize(['admin']), (req, res) => {
-  db.query('SELECT * FROM notifications ORDER BY createdAt DESC', (err, rows) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
-    }
-    res.json(rows);
-  });
+router.get('/all', authorize(['admin']), async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM notifications ORDER BY "createdAt" DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
+  }
 });
 
 // Kullanıcının Bildirimlerini Listele
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   if (!req.user || !req.user.userId) {
     return res.status(401).json({ message: 'Yetkilendirme hatası' });
   }
   
-  db.query(
-    'SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC', 
-    [req.user.userId], 
-    (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
-      }
-      res.json(rows);
-    }
-  );
+  try {
+    const result = await db.query(
+      'SELECT * FROM notifications WHERE "userId" = $1 ORDER BY "createdAt" DESC',
+      [req.user.userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
+  }
 });
 
 // Okunmamış Bildirimleri Listele
@@ -42,7 +41,7 @@ router.get('/unread', (req, res) => {
     return res.status(401).json({ message: 'Yetkilendirme hatası' });
   }
   
-  db.query(
+  db.all(
     'SELECT * FROM notifications WHERE userId = ? AND status = "unread" ORDER BY createdAt DESC', 
     [req.user.userId], 
     (err, rows) => {

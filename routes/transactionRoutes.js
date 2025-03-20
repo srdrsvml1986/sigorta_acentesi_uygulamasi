@@ -4,26 +4,26 @@ const db = require('../db');
 const { authenticateToken, authorize } = require('../middleware/authMiddleware');
 
 // Tüm işlemleri getir
-router.get('/', authorize(['admin', 'manager']), (req, res) => {
-  db.query(`SELECT * FROM transactions ORDER BY date DESC`, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ message: 'Veritabanı hatası', error: err.message });
-    }
-    res.json(rows);
-  });
+router.get('/', authorize(['admin', 'manager']), async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM transactions ORDER BY date DESC');
+    res.json(result.rows);
+  } catch (err) {
+    return res.status(500).json({ message: 'Veritabanı hatası', error: err.message });
+  }
 });
 
 // Belirli bir işlemi getir
-router.get('/:id', authorize(['admin', 'manager']), (req, res) => {
-  db.get(`SELECT * FROM transactions WHERE id = ?`, [req.params.id], (err, row) => {
-    if (err) {
-      return res.status(500).json({ message: 'Veritabanı hatası', error: err.message });
-    }
-    if (!row) {
+router.get('/:id', authorize(['admin', 'manager']), async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'İşlem bulunamadı' });
     }
-    res.json(row);
-  });
+    res.json(result.rows[0]);
+  } catch (err) {
+    return res.status(500).json({ message: 'Veritabanı hatası', error: err.message });
+  }
 });
 
 // Yeni işlem ekle

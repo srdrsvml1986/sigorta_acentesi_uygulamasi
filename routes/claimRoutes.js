@@ -4,34 +4,34 @@ const db = require('../db');
 const { authorize } = require('../middleware/authMiddleware');
 
 // Tüm Hasar Taleplerini Listele
-router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
+router.get('/', authorize(['admin', 'manager', 'agent']), async (req, res) => {
   const query = `
-    SELECT c.*, p.policyNumber, cu.firstName, cu.lastName 
+    SELECT c.*, p."policyNumber", cu."firstName", cu."lastName" 
     FROM claims c
-    JOIN policies p ON c.policyId = p.id
-    JOIN customers cu ON p.customerId = cu.id
+    JOIN policies p ON c."policyId" = p.id
+    JOIN customers cu ON p."customerId" = cu.id
   `;
   
-  db.query(query, (err, rows) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
-    }
-    res.json(rows);
-  });
+  try {
+    const result = await db.query(query);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
+  }
 });
 
 // Belirli bir Poliçeye Ait Hasar Taleplerini Listele
-router.get('/policy/:policyId', authorize(['admin', 'manager', 'agent']), (req, res) => {
+router.get('/policy/:policyId', authorize(['admin', 'manager', 'agent']), async (req, res) => {
   const { policyId } = req.params;
   
-  db.query('SELECT * FROM claims WHERE policyId = ?', [policyId], (err, rows) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
-    }
-    res.json(rows);
-  });
+  try {
+    const result = await db.query('SELECT * FROM claims WHERE "policyId" = $1', [policyId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
+  }
 });
 
 // Belirli Bir Hasar Talebini Görüntüle
