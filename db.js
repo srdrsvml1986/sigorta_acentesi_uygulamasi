@@ -1,20 +1,18 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 let pool;
 
 async function initializeDB() {
   try {
-    // MySQL/MariaDB bağlantı havuzu oluştur
-    pool = await mysql.createPool({
-      host: process.env.DB_HOST || 'localhost:3306',
-      user: process.env.DB_USER || 'elacigde_mysql',
+    // PostgreSQL bağlantı havuzu oluştur
+    pool = new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      user: process.env.DB_USER || 'postgres',
       password: process.env.DB_PASSWORD || '6hJm6^99n',
-      database: process.env.DB_NAME || 'elacigde_sigorta',
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
+      database: process.env.DB_NAME || 'sigorta',
     });
     
-    console.log('MariaDB veritabanına başarıyla bağlandı');
+    console.log('PostgreSQL veritabanına başarıyla bağlandı');
     
     // Tabloları oluştur
     await createTables();
@@ -31,213 +29,192 @@ async function createTables() {
     // Kullanıcılar tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role ENUM('admin', 'agent', 'manager') NOT NULL DEFAULT 'agent'
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        role VARCHAR(10) NOT NULL DEFAULT 'agent' CHECK (role IN ('admin', 'agent', 'manager'))
+      )
     `);
 
     // Finansal işlemler tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS transactions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         date DATE NOT NULL,
-        type ENUM('income', 'expense') NOT NULL,
+        type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
         category VARCHAR(50) NOT NULL,
         amount DECIMAL(10, 2) NOT NULL,
-        relatedEntityType VARCHAR(50), 
-        relatedEntityId INT,
+        related_entity_type VARCHAR(50),
+        related_entity_id INTEGER,
         description TEXT,
-        paymentMethod ENUM('cash', 'bank', 'credit_card', 'check') DEFAULT 'cash',
-        status ENUM('completed', 'pending', 'canceled') DEFAULT 'completed',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        payment_method VARCHAR(20) DEFAULT 'cash' CHECK (payment_method IN ('cash', 'bank', 'credit_card', 'check')),
+        status VARCHAR(20) DEFAULT 'completed' CHECK (status IN ('completed', 'pending', 'canceled')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Acente tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS agencies (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         code VARCHAR(50) NOT NULL,
-        ownerName VARCHAR(100) NOT NULL,
+        owner_name VARCHAR(100) NOT NULL,
         phone VARCHAR(20) NOT NULL,
         email VARCHAR(100) NOT NULL,
         address TEXT,
-        taxNumber VARCHAR(50),
-        foundationYear INT,
-        employeeCount INT,
+        tax_number VARCHAR(50),
+        foundation_year INTEGER,
+        employee_count INTEGER,
         website VARCHAR(100),
-        status ENUM('active', 'passive', 'suspended') DEFAULT 'active',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'passive', 'suspended')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Sigorta şirketleri tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS insurance_companies (
-        id INT AUTO_INCREMENT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         code VARCHAR(50) NOT NULL,
-        contactPerson VARCHAR(100),
+        contact_person VARCHAR(100),
         phone VARCHAR(20) NOT NULL,
         email VARCHAR(100) NOT NULL,
         address TEXT,
-        taxNumber VARCHAR(50),
-        foundationYear INT,
+        tax_number VARCHAR(50),
+        foundation_year INTEGER,
         website VARCHAR(100),
-        commissionRate DECIMAL(5, 2),
-        paymentTerms TEXT,
-        contractDate DATE,
-        status ENUM('active', 'passive', 'suspended') DEFAULT 'active',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        commission_rate DECIMAL(5, 2),
+        payment_terms TEXT,
+        contract_date DATE,
+        status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'passive', 'suspended')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Müşteriler tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS customers (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        firstName VARCHAR(50),
-        lastName VARCHAR(50),
+        id SERIAL PRIMARY KEY,
+        first_name VARCHAR(50),
+        last_name VARCHAR(50),
         email VARCHAR(100),
         phone VARCHAR(20),
         address TEXT,
         city VARCHAR(50),
-        postalCode VARCHAR(20),
-        birthDate DATE,
-        identityNumber VARCHAR(20),
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        postal_code VARCHAR(20),
+        birth_date DATE,
+        identity_number VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Poliçeler tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS policies (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        customerId INT,
-        policyNumber VARCHAR(50),
-        insuranceType VARCHAR(50),
-        startDate DATE,
-        endDate DATE,
+        id SERIAL PRIMARY KEY,
+        customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+        policy_number VARCHAR(50),
+        insurance_type VARCHAR(50),
+        start_date DATE,
+        end_date DATE,
         premium DECIMAL(10, 2),
-        status ENUM('active', 'expired', 'cancelled') DEFAULT 'active',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (customerId) REFERENCES customers(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'expired', 'cancelled')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Hasar ve Talep Yönetimi Tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS claims (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        policyId INT,
-        claimNumber VARCHAR(50),
-        claimDate DATE,
+        id SERIAL PRIMARY KEY,
+        policy_id INTEGER REFERENCES policies(id) ON DELETE SET NULL,
+        claim_number VARCHAR(50),
+        claim_date DATE,
         description TEXT,
-        damageAmount DECIMAL(10, 2),
-        status ENUM('pending', 'approved', 'rejected', 'paid') DEFAULT 'pending',
-        documents JSON,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (policyId) REFERENCES policies(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        damage_amount DECIMAL(10, 2),
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'paid')),
+        documents JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Komisyon ve Finans Yönetimi Tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS commissions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        policyId INT,
+        id SERIAL PRIMARY KEY,
+        policy_id INTEGER REFERENCES policies(id) ON DELETE SET NULL,
         amount DECIMAL(10, 2),
         rate DECIMAL(5, 2),
-        paymentDate DATE,
-        status ENUM('pending', 'paid') DEFAULT 'pending',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (policyId) REFERENCES policies(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
-    `);
-
-    // Finansal işlemler tablosu
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS financial_transactions (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        transactionType ENUM('premium_payment', 'commission_payment', 'claim_payment'),
-        relatedId INT,
-        amount DECIMAL(10, 2),
-        transactionDate DATE,
-        description TEXT,
-        status ENUM('completed', 'pending', 'failed') DEFAULT 'completed',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        payment_date DATE,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'paid')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Doküman ve Dosya Yönetimi Tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS documents (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        relatedType VARCHAR(20),
-        relatedId INT,
-        fileName VARCHAR(255),
-        filePath VARCHAR(255),
-        fileType VARCHAR(50),
-        fileSize INT,
-        uploadedBy INT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (uploadedBy) REFERENCES users(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        id SERIAL PRIMARY KEY,
+        related_type VARCHAR(20),
+        related_id INTEGER,
+        file_name VARCHAR(255),
+        file_path VARCHAR(255),
+        file_type VARCHAR(50),
+        file_size INTEGER,
+        uploaded_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP
+      )
     `);
 
     // Bildirim ve İletişim Sistemi Tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS notifications (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        userId INT,
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         title VARCHAR(255),
         message TEXT,
-        type ENUM('email', 'sms', 'app'),
-        status ENUM('read', 'unread') DEFAULT 'unread',
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        sentAt TIMESTAMP NULL,
-        readAt TIMESTAMP NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        type VARCHAR(10) CHECK (type IN ('email', 'sms', 'app')),
+        status VARCHAR(10) DEFAULT 'unread' CHECK (status IN ('read', 'unread')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        sent_at TIMESTAMP,
+        read_at TIMESTAMP
+      )
     `);
 
     // Raporlama ve Analitik için log tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS activity_logs (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        userId INT,
-        actionType ENUM('create', 'update', 'delete', 'view'),
-        targetType VARCHAR(50),
-        targetId INT,
-        details JSON,
-        ipAddress VARCHAR(45),
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        action_type VARCHAR(10) CHECK (action_type IN ('create', 'update', 'delete', 'view')),
+        target_type VARCHAR(50),
+        target_id INTEGER,
+        details JSONB,
+        ip_address VARCHAR(45),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
     `);
 
     // Entegrasyon Kayıtları Tablosu
     await pool.query(`
       CREATE TABLE IF NOT EXISTS integration_logs (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        integrationType VARCHAR(50),
-        requestData JSON,
-        responseData JSON,
-        status ENUM('success', 'failed'),
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_turkish_ci
+        id SERIAL PRIMARY KEY,
+        integration_type VARCHAR(50),
+        request_data JSONB,
+        response_data JSONB,
+        status VARCHAR(10) CHECK (status IN ('success', 'failed')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
     `);
 
     console.log('Tüm tablolar başarıyla oluşturuldu');
@@ -250,15 +227,15 @@ async function createTables() {
 // Veritabanı sorguları için yardımcı fonksiyonlar
 async function query(sql, params) {
   try {
-    const [results] = await pool.execute(sql, params);
-    return results;
+    const result = await pool.query(sql, params);
+    return result.rows;
   } catch (err) {
     console.error('Sorgu hatası:', err);
     throw err;
   }
 }
 
-// Veritabanı bağlantısını kapatır (uygulamayı kapatırken kullanılabilir)
+// Veritabanı bağlantısını kapatır
 async function close() {
   try {
     await pool.end();
