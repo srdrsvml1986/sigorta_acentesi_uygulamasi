@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Customers from './components/Customers';
@@ -96,16 +96,30 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/register" element={<Register />} />
-          {isLoggedIn && (
-            <>
-              <Route path="/customers" element={<Customers userRole={userRole} />} />
-              <Route path="/policies" element={<Policies userRole={userRole} />} />
-              <Route path="/agencies" element={<Agencies userRole={userRole} />} />
-              <Route path="/insurance-companies" element={<InsuranceCompanies userRole={userRole} />} />
-              <Route path="/accounts" element={<Accounts userRole={userRole} />} />
-            </>
-          )}
-          <Route path="/" element={isLoggedIn ? <Customers userRole={userRole} /> : <Login onLogin={handleLogin} />} />
+          <Route
+            path="/customers"
+            element={isLoggedIn ? <Customers userRole={userRole} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/policies"
+            element={isLoggedIn ? <Policies userRole={userRole} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/agencies"
+            element={isLoggedIn ? <Agencies userRole={userRole} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/insurance-companies"
+            element={isLoggedIn ? <InsuranceCompanies userRole={userRole} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/accounts"
+            element={isLoggedIn ? <Accounts userRole={userRole} /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/"
+            element={<Navigate to={isLoggedIn ? "/customers" : "/login"} />}
+          />
         </Routes>
       </main>
 

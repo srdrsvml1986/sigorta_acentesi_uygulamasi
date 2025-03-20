@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {
-  Table, Button, Modal, Form, Input, DatePicker,
-  message, Select, InputNumber, Badge, Space, Tooltip
-} from 'antd';
+import { Table, Button, Modal, Form, Input, DatePicker, message, Select, InputNumber, Badge, Space, Tooltip } from 'antd';
 import moment from 'moment';
 import { EditOutlined, DeleteOutlined, FileProtectOutlined } from '@ant-design/icons';
+import api from '../utils/api';
 
 const { Option } = Select;
 
@@ -45,8 +42,12 @@ const Policies = () => {
   const fetchPolicies = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/policies');
-      setPolicies(response.data);
+      const response = await api.fetch('/api/v1/policies');
+      if (!response.ok) {
+        throw new Error('Poliçeler yüklenemedi');
+      }
+      const data = await response.json();
+      setPolicies(data);
     } catch (error) {
       message.error('Poliçeler yüklenirken hata oluştu');
       console.error('Poliçe yükleme hatası:', error);
@@ -57,8 +58,12 @@ const Policies = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await axios.get('/api/customers');
-      setCustomers(response.data);
+      const response = await api.fetch('/api/v1/customers');
+      if (!response.ok) {
+        throw new Error('Müşteriler yüklenemedi');
+      }
+      const data = await response.json();
+      setCustomers(data);
     } catch (error) {
       message.error('Müşteriler yüklenirken hata oluştu');
       console.error('Müşteri yükleme hatası:', error);
@@ -67,8 +72,12 @@ const Policies = () => {
 
   const fetchAgencies = async () => {
     try {
-      const response = await axios.get('/api/agencies');
-      setAgencies(response.data);
+      const response = await api.fetch('/api/v1/agencies');
+      if (!response.ok) {
+        throw new Error('Acenteler yüklenemedi');
+      }
+      const data = await response.json();
+      setAgencies(data);
     } catch (error) {
       message.error('Acenteler yüklenirken hata oluştu');
       console.error('Acente yükleme hatası:', error);
@@ -77,8 +86,12 @@ const Policies = () => {
 
   const fetchInsuranceCompanies = async () => {
     try {
-      const response = await axios.get('/api/insurance-companies');
-      setInsuranceCompanies(response.data);
+      const response = await api.fetch('/api/v1/insurance-companies');
+      if (!response.ok) {
+        throw new Error('Sigorta şirketleri yüklenemedi');
+      }
+      const data = await response.json();
+      setInsuranceCompanies(data);
     } catch (error) {
       message.error('Sigorta şirketleri yüklenirken hata oluştu');
       console.error('Sigorta şirketi yükleme hatası:', error);
@@ -103,7 +116,12 @@ const Policies = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/policies/${id}`);
+      const response = await api.fetch(`/api/v1/policies/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        throw new Error('Poliçe silinemedi');
+      }
       message.success('Poliçe başarıyla silindi');
       fetchPolicies();
     } catch (error) {
@@ -121,23 +139,28 @@ const Policies = () => {
         end_date: values.end_date.format('YYYY-MM-DD')
       };
 
-      if (editingPolicy) {
-        await axios.put(`/api/policies/${editingPolicy.id}`, formattedValues);
-        message.success('Poliçe başarıyla güncellendi');
-      } else {
-        await axios.post('/api/policies', formattedValues);
-        message.success('Poliçe başarıyla oluşturuldu');
+      const response = await api.fetch(
+        editingPolicy ? `/api/v1/policies/${editingPolicy.id}` : '/api/v1/policies',
+        {
+          method: editingPolicy ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formattedValues)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'İşlem başarısız');
       }
 
+      message.success(editingPolicy ? 'Poliçe başarıyla güncellendi' : 'Poliçe başarıyla oluşturuldu');
       setModalVisible(false);
       form.resetFields();
       fetchPolicies();
     } catch (error) {
-      if (error.isAxiosError) {
-        message.error(error.response?.data?.message || 'İşlem sırasında hata oluştu');
-      } else {
-        message.error('Lütfen form alanlarını kontrol edin');
-      }
+      message.error(error.message || 'İşlem sırasında hata oluştu');
       console.error('Form gönderme hatası:', error);
     }
   };
