@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 function Accounts({ userRole }) {
@@ -171,9 +173,25 @@ function Accounts({ userRole }) {
     setEditingTransaction(null);
   };
 
+  // Toast bildirimi gösterme fonksiyonu
+  const showToast = (type, message) => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!validateForm()) {
+      return;
+    }
     
     const token = localStorage.getItem('token');
     const url = editingTransaction 
@@ -193,14 +211,17 @@ function Accounts({ userRole }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'İşlem başarısız oldu.');
+        showToast('error', errorData.message || 'İşlem başarısız oldu.');
         return;
       }
 
       await fetchTransactions();
       setIsModalOpen(false);
       resetForm();
+      showToast('success', editingTransaction ? 'İşlem başarıyla güncellendi.' : 'İşlem başarıyla eklendi.');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Form submission error:', error);
     }
   };
@@ -238,12 +259,15 @@ function Accounts({ userRole }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'İşlem silinemedi.');
+        showToast('error', errorData.message || 'İşlem silinemedi.');
         return;
       }
 
       await fetchTransactions();
+      showToast('success', 'İşlem başarıyla silindi.');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Transaction delete error:', error);
     }
   };
@@ -344,6 +368,7 @@ function Accounts({ userRole }) {
 
   return (
     <div className="container">
+      <ToastContainer />
       <div className="header-actions">
         <h2>Finansal İşlemler</h2>
         <button 

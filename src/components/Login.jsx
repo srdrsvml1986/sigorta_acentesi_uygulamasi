@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import api from '../utils/api';
 
 function Login({ onLogin }) {
@@ -7,6 +9,17 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const showToast = (type, message) => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +37,7 @@ function Login({ onLogin }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'Giriş başarısız.');
+        showToast('error', errorData.message || 'Giriş başarısız.');
         return;
       }
 
@@ -31,15 +45,18 @@ function Login({ onLogin }) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
       onLogin(data.token, data.role);
+      showToast('success', 'Giriş başarılı!');
       navigate('/customers');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Login error:', error);
     }
   };
 
   return (
     <div className="form-container">
+      <ToastContainer />
       <h2>Giriş</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmit}>

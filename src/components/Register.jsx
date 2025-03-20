@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import api from '../utils/api';
 
 function Register() {
@@ -9,6 +11,17 @@ function Register() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const showToast = (type, message) => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,19 +40,23 @@ function Register() {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'Kayıt başarısız.');
+        showToast('error', errorData.message || 'Kayıt başarısız.');
         return;
       }
 
       setMessage('Kayıt başarılı! Giriş yapabilirsiniz.');
+      showToast('success', 'Kayıt başarılı! Giriş yapabilirsiniz.');
       navigate('/login');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Registration error:', error);
     }
   };
 
   return (
     <div className="form-container">
+      <ToastContainer />
       <h2>Kayıt</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {message && <p style={{ color: 'green' }}>{message}</p>}

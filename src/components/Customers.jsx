@@ -195,12 +195,15 @@ function Customers({ userRole }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'Müşteri silinemedi.');
+        showToast('error', errorData.message || 'Müşteri silinemedi.');
         return;
       }
 
       await fetchCustomers();
+      showToast('success', 'Müşteri başarıyla silindi.');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Customer delete error:', error);
     }
   };
