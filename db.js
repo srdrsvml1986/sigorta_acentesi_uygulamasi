@@ -163,11 +163,18 @@ async function createTables(dbType) {
       CREATE TABLE IF NOT EXISTS policies (
         id SERIAL PRIMARY KEY,
         customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+        agency_id INTEGER REFERENCES agencies(id) ON DELETE SET NULL,
+        insurance_company_id INTEGER REFERENCES insurance_companies(id) ON DELETE SET NULL,
         policy_number VARCHAR(50),
         insurance_type VARCHAR(50),
         start_date DATE,
         end_date DATE,
         premium DECIMAL(10, 2),
+        commission_rate DECIMAL(5, 2),
+        commission_amount DECIMAL(10, 2),
+        profit DECIMAL(10, 2),
+        type VARCHAR(50),
+        description TEXT,
         status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'expired', 'cancelled')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP
