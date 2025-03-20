@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -12,7 +13,7 @@ function Login({ onLogin }) {
     setError('');
 
     try {
-      const response = await fetch('/api/v1/users/login', {
+      const response = await api.fetch('/api/v1/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,6 +28,8 @@ function Login({ onLogin }) {
       }
 
       const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role);
       onLogin(data.token, data.role);
       navigate('/customers');
     } catch (error) {

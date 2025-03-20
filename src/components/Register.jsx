@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -15,7 +16,7 @@ function Register() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/v1/users/register', {
+      const response = await api.fetch('/api/v1/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
