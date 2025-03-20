@@ -3,13 +3,14 @@ const router = express.Router();
 const db = require('../db');
 
 // Tüm acenteleri getir
-router.get('/', (req, res, next) => {
-  db.all('SELECT * FROM agencies ORDER BY name ASC', (err, agencies) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(agencies);
-  });
+router.get('/', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM agencies ORDER BY name ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Acenteler getirilirken hata:', err);
+    res.status(500).json({ message: 'Sunucu hatası', error: err.message });
+  }
 });
 
 // ID'ye göre acente getir

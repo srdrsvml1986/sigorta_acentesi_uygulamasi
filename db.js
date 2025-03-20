@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+
 let pool;
 
 async function initializeDB() {
@@ -245,8 +246,7 @@ async function close() {
 }
 
 module.exports = {
-  init: initializeDB,
   query,
   close,
-  getPool: () => pool
+  init: initializeDB
 };
