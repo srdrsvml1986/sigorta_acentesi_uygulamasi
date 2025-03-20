@@ -175,13 +175,19 @@ const Policies = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      
+      // Sayısal değerleri kontrol et ve dönüştür
       const formattedValues = {
         ...values,
         start_date: values.start_date.format('YYYY-MM-DD'),
         end_date: values.end_date.format('YYYY-MM-DD'),
+        premium: parseFloat(values.premium) || 0,
+        commission_rate: parseFloat(values.commission_rate) || 0,
+        commission_amount: parseFloat(values.commission_amount) || 0,
+        profit: parseFloat(values.profit) || 0,
         agency_id: values.agency_id ? parseInt(values.agency_id) : null,
         customer_id: parseInt(values.customer_id),
-        insurance_company_id: parseInt(values.insurance_company_id)
+        insurance_company_id: values.insurance_company_id ? parseInt(values.insurance_company_id) : null
       };
 
       const token = localStorage.getItem('token');
@@ -199,16 +205,7 @@ const Policies = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || 'İşlem başarısız oldu.');
-        toast.error(errorData.message || 'İşlem başarısız oldu.', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
-        return;
+        throw new Error(errorData.message || errorData.error || 'İşlem başarısız oldu');
       }
 
       await fetchPolicies();
@@ -216,16 +213,8 @@ const Policies = () => {
       form.resetFields();
       toast.success(editingPolicy ? 'Poliçe başarıyla güncellendi' : 'Poliçe başarıyla oluşturuldu');
     } catch (error) {
-      setError('Sunucu hatası.');
-      toast.error('Sunucu hatası.', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
       console.error('Form gönderme hatası:', error);
+      toast.error(error.message || 'Sunucu hatası');
     }
   };
 
@@ -335,32 +324,32 @@ const Policies = () => {
     const searchValue = searchTerm.toLowerCase();
     const matchConditions = [];
     
-    if (searchFilters.policyNumber) {
+    if (searchFilters.policyNumber && policy.policy_number) {
       matchConditions.push(
         policy.policy_number.toLowerCase().includes(searchValue)
       );
     }
-    if (searchFilters.customerName) {
+    if (searchFilters.customerName && (policy.customer_first_name || policy.customer_last_name)) {
       matchConditions.push(
-        `${policy.customer.first_name} ${policy.customer.last_name}`.toLowerCase().includes(searchValue)
+        `${policy.customer_first_name || ''} ${policy.customer_last_name || ''}`.toLowerCase().includes(searchValue)
       );
     }
-    if (searchFilters.insuranceType) {
+    if (searchFilters.insuranceType && policy.type) {
       matchConditions.push(
-        policy.insurance_type.toLowerCase().includes(searchValue)
+        policy.type.toLowerCase().includes(searchValue)
       );
     }
-    if (searchFilters.company) {
+    if (searchFilters.company && policy.insurance_company_name) {
       matchConditions.push(
-        policy.insurance_company.name.toLowerCase().includes(searchValue)
+        policy.insurance_company_name.toLowerCase().includes(searchValue)
       );
     }
-    if (searchFilters.agency) {
+    if (searchFilters.agency && policy.agency_name) {
       matchConditions.push(
-        policy.agency.name.toLowerCase().includes(searchValue)
+        policy.agency_name.toLowerCase().includes(searchValue)
       );
     }
-    if (searchFilters.status) {
+    if (searchFilters.status && policy.status) {
       matchConditions.push(
         policy.status.toLowerCase().includes(searchValue)
       );

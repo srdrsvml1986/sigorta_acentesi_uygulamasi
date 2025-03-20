@@ -7,11 +7,12 @@ const { authorize } = require('../middleware/authMiddleware');
 router.get('/', authorize(['admin', 'manager', 'agent']), async (req, res) => {
   try {
     const result = await db.query(`
-      SELECT p.*, 
-        c.first_name as customer_first_name, 
-        c.last_name as customer_last_name,
-        a.name as agency_name,
-        ic.name as insurance_company_name
+      SELECT 
+        p.*,
+        COALESCE(c.first_name, '') as customer_first_name,
+        COALESCE(c.last_name, '') as customer_last_name,
+        COALESCE(a.name, '') as agency_name,
+        COALESCE(ic.name, '') as insurance_company_name
       FROM policies p
       LEFT JOIN customers c ON p.customer_id = c.id
       LEFT JOIN agencies a ON p.agency_id = a.id
@@ -38,6 +39,28 @@ router.post('/', authorize(['admin', 'manager', 'agent']), async (req, res) => {
   }
 
   try {
+    // Önce foreign key referanslarını kontrol et
+    if (customer_id) {
+      const customerCheck = await db.query('SELECT id FROM customers WHERE id = $1', [customer_id]);
+      if (customerCheck.rows.length === 0) {
+        return res.status(400).json({ message: 'Geçersiz müşteri ID' });
+      }
+    }
+
+    if (agency_id) {
+      const agencyCheck = await db.query('SELECT id FROM agencies WHERE id = $1', [agency_id]);
+      if (agencyCheck.rows.length === 0) {
+        return res.status(400).json({ message: 'Geçersiz acente ID' });
+      }
+    }
+
+    if (insurance_company_id) {
+      const companyCheck = await db.query('SELECT id FROM insurance_companies WHERE id = $1', [insurance_company_id]);
+      if (companyCheck.rows.length === 0) {
+        return res.status(400).json({ message: 'Geçersiz sigorta şirketi ID' });
+      }
+    }
+
     const sql = `
       INSERT INTO policies (
         policy_number, customer_id, agency_id, insurance_company_id,
@@ -47,15 +70,29 @@ router.post('/', authorize(['admin', 'manager', 'agent']), async (req, res) => {
       RETURNING *`;
 
     const result = await db.query(sql, [
-      policy_number, customer_id, agency_id || null, insurance_company_id || null,
-      start_date, end_date, premium, commission_rate || null, commission_amount || null,
-      profit || null, type || '', status || 'active', description || ''
+      policy_number,
+      customer_id,
+      agency_id || null,
+      insurance_company_id || null,
+      start_date,
+      end_date,
+      premium,
+      commission_rate || 0,
+      commission_amount || 0,
+      profit || 0,
+      type || '',
+      status || 'active',
+      description || ''
     ]);
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Poliçe oluşturulurken hata:', err);
-    return res.status(400).json({ message: 'Poliçe oluşturulamadı', error: err.message });
+    return res.status(400).json({ 
+      message: 'Poliçe oluşturulamadı', 
+      error: err.message,
+      details: err.detail || 'Detaylı hata bilgisi mevcut değil'
+    });
   }
 });
 
