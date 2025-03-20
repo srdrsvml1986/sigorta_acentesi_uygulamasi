@@ -5,7 +5,7 @@ const express = require('express');
 
     // Tüm Poliçeleri Listele
     router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
-      db.all('SELECT * FROM policies', (err, rows) => {
+      db.query('SELECT * FROM policies', (err, rows) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: 'Sunucu hatası'+err?.message });

@@ -4,7 +4,7 @@ const db = require('../db');
 
 // Tüm sigorta şirketlerini getir
 router.get('/', (req, res, next) => {
-  db.all('SELECT * FROM insurance_companies ORDER BY name ASC', (err, companies) => {
+  db.query('SELECT * FROM insurance_companies ORDER BY name ASC', (err, companies) => {
     if (err) {
       return next(err);
     }

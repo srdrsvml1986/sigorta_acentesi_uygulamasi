@@ -12,7 +12,7 @@ router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
     JOIN customers cu ON p.customerId = cu.id
   `;
   
-  db.all(query, (err, rows) => {
+  db.query(query, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -25,7 +25,7 @@ router.get('/', authorize(['admin', 'manager', 'agent']), (req, res) => {
 router.get('/policy/:policyId', authorize(['admin', 'manager', 'agent']), (req, res) => {
   const { policyId } = req.params;
   
-  db.all('SELECT * FROM claims WHERE policyId = ?', [policyId], (err, rows) => {
+  db.query('SELECT * FROM claims WHERE policyId = ?', [policyId], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });

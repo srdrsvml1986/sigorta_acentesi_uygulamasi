@@ -5,7 +5,7 @@ const { authenticateToken, authorize } = require('../middleware/authMiddleware')
 
 // Tüm işlemleri getir
 router.get('/', authorize(['admin', 'manager']), (req, res) => {
-  db.all(`SELECT * FROM transactions ORDER BY date DESC`, (err, rows) => {
+  db.query(`SELECT * FROM transactions ORDER BY date DESC`, (err, rows) => {
     if (err) {
       return res.status(500).json({ message: 'Veritabanı hatası', error: err.message });
     }

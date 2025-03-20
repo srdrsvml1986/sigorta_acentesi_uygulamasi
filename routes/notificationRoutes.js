@@ -8,7 +8,7 @@ const { authorize } = require('../middleware/authMiddleware');
 
 // Tüm Bildirimleri Listele (Yönetici)
 router.get('/all', authorize(['admin']), (req, res) => {
-  db.all('SELECT * FROM notifications ORDER BY createdAt DESC', (err, rows) => {
+  db.query('SELECT * FROM notifications ORDER BY createdAt DESC', (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
     return res.status(401).json({ message: 'Yetkilendirme hatası' });
   }
   
-  db.all(
+  db.query(
     'SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC', 
     [req.user.userId], 
     (err, rows) => {
@@ -42,7 +42,7 @@ router.get('/unread', (req, res) => {
     return res.status(401).json({ message: 'Yetkilendirme hatası' });
   }
   
-  db.all(
+  db.query(
     'SELECT * FROM notifications WHERE userId = ? AND status = "unread" ORDER BY createdAt DESC', 
     [req.user.userId], 
     (err, rows) => {

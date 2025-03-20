@@ -101,7 +101,7 @@ router.get('/sales', authorize(['admin', 'manager']), (req, res) => {
     query += ` GROUP BY period ORDER BY period ASC`;
   }
   
-  db.all(query, params, (err, rows) => {
+  db.query(query, params, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -161,7 +161,7 @@ router.get('/claims', authorize(['admin', 'manager']), (req, res) => {
     query += ` GROUP BY status`;
   }
   
-  db.all(query, params, (err, rows) => {
+  db.query(query, params, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -210,7 +210,7 @@ router.get('/commissions', authorize(['admin', 'manager']), (req, res) => {
     query += ` GROUP BY period ORDER BY period ASC`;
   }
   
-  db.all(query, params, (err, rows) => {
+  db.query(query, params, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -265,7 +265,7 @@ router.get('/user-activities', authorize(['admin']), (req, res) => {
   
   query += ` ORDER BY a.createdAt DESC LIMIT 1000`;
   
-  db.all(query, params, (err, rows) => {
+  db.query(query, params, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -297,7 +297,7 @@ router.get('/renewals', authorize(['admin', 'manager', 'agent']), (req, res) => 
     ORDER BY p.endDate ASC
   `;
   
-  db.all(query, [futureDate, todayStr], (err, rows) => {
+  db.query(query, [futureDate, todayStr], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -343,7 +343,7 @@ router.get('/agent-performance', authorize(['admin', 'manager']), (req, res) => 
   
   const finalQuery = `${query} ${dateCondition} GROUP BY u.id ORDER BY totalPremium DESC`;
   
-  db.all(finalQuery, params, (err, rows) => {
+  db.query(finalQuery, params, (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -366,7 +366,7 @@ router.get('/insurance-types', authorize(['admin', 'manager']), (req, res) => {
     ORDER BY policyCount DESC
   `;
   
-  db.all(query, [], (err, rows) => {
+  db.query(query, [], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sunucu hatası'+err?.message });
@@ -385,7 +385,7 @@ router.post('/custom', authorize(['admin']), (req, res) => {
     return res.status(400).json({ message: 'Yalnızca SELECT sorgularına izin verilmektedir.' });
   }
   
-  db.all(query, params || [], (err, rows) => {
+  db.query(query, params || [], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: 'Sorgu çalıştırılırken hata oluştu', error: err.message });

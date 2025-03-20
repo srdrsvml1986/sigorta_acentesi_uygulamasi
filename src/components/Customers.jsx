@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import './styles.css'; // Stil dosyasını içe aktaralım
 
 function Customers({ userRole }) {
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -90,9 +91,8 @@ function Customers({ userRole }) {
         return;
       }
 
-      // Başarılı işlem sonrası
       await fetchCustomers();
-      setShowForm(false);
+      setIsModalOpen(false);
       resetForm();
     } catch (error) {
       setError('Sunucu hatası.');
@@ -109,7 +109,7 @@ function Customers({ userRole }) {
       address: customer.address || ''
     });
     setEditingCustomer(customer);
-    setShowForm(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (customerId) => {
@@ -163,88 +163,92 @@ function Customers({ userRole }) {
           className="btn btn-primary" 
           onClick={() => {
             resetForm();
-            setShowForm(!showForm);
+            setIsModalOpen(true);
           }}
         >
-          {showForm ? 'İptal' : 'Yeni Müşteri Ekle'}
+          Yeni Müşteri Ekle
         </button>
       </div>
 
-      {showForm && (
-        <div className="form-container">
-          <h3>{editingCustomer ? 'Müşteri Düzenle' : 'Yeni Müşteri Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="firstName">Ad</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="lastName">Soyad</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">E-posta</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="phone">Telefon</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="address">Adres</label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-              ></textarea>
-            </div>
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success">
-                {editingCustomer ? 'Güncelle' : 'Ekle'}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
-              >
-                İptal
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingCustomer ? 'Müşteri Düzenle' : 'Yeni Müşteri Ekle'}
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="firstName">Ad</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="lastName">Soyad</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">E-posta</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="phone">Telefon</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="address">Adres</label>
+            <textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+          <div className="form-actions">
+            <button type="submit" className="btn btn-success">
+              {editingCustomer ? 'Güncelle' : 'Ekle'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              İptal
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {customers.length === 0 ? (
         <p>Henüz müşteri kaydı bulunmamaktadır.</p>
