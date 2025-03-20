@@ -15,9 +15,16 @@ const insuranceCompanyRoutes = require('./routes/insuranceCompanyRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const { authenticateToken } = require('./middleware/authMiddleware');
 const fs = require('fs');
+const db = require('./db');
 
 const app = express();
 const port = process.env.PORT || 80;
+
+// Veritabanı bağlantısını başlat
+db.init().catch(err => {
+  console.error('Veritabanı başlatılamadı:', err);
+  process.exit(1);
+});
 
 app.use(express.json());
 

@@ -224,22 +224,21 @@ async function createTables() {
   }
 }
 
-// Veritabanı sorguları için yardımcı fonksiyonlar
-async function query(sql, params) {
-  try {
-    const result = await pool.query(sql, params);
-    return result.rows;
-  } catch (err) {
-    console.error('Sorgu hatası:', err);
-    throw err;
+// Query fonksiyonu
+async function query(text, params) {
+  if (!pool) {
+    await initializeDB();
   }
+  return pool.query(text, params);
 }
 
 // Veritabanı bağlantısını kapatır
 async function close() {
   try {
-    await pool.end();
-    console.log('Veritabanı bağlantısı kapatıldı');
+    if (pool) {
+      await pool.end();
+      console.log('Veritabanı bağlantısı kapatıldı');
+    }
   } catch (err) {
     console.error('Veritabanı bağlantısı kapatılırken hata:', err);
   }
