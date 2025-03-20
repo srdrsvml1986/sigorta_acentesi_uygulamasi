@@ -10,19 +10,30 @@ import Accounts from "./components/Accounts";
 import "./App.css";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    const token = localStorage.getItem("token");
+    return !!token;
+  });
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem("role") || null;
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    if (token) {
+    if (!token) {
+      setIsLoggedIn(false);
+      setUserRole(null);
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        navigate('/login');
+      }
+    } else {
       setIsLoggedIn(true);
       setUserRole(role);
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogin = (token, role) => {
     localStorage.setItem("token", token);
@@ -42,6 +53,15 @@ function App() {
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  // Korumalı route bileşeni
+  const ProtectedRoute = ({ children }) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return <Navigate to="/login" />;
+    }
+    return children;
   };
 
   return (
@@ -99,51 +119,41 @@ function App() {
           <Route
             path="/customers"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <Customers userRole={userRole} />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/policies"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <Policies userRole={userRole} />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/agencies"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <Agencies userRole={userRole} />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/insurance-companies"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <InsuranceCompanies userRole={userRole} />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
             path="/accounts"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <Accounts userRole={userRole} />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
