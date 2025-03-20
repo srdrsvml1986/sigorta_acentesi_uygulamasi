@@ -15,6 +15,14 @@ function Customers({ userRole }) {
     phone: '',
     address: ''
   });
+  const [formErrors, setFormErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'ascending'
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCustomers();
@@ -66,9 +74,32 @@ function Customers({ userRole }) {
     setEditingCustomer(null);
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    // E-posta doğrulama
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      errors.email = 'Geçerli bir e-posta adresi giriniz';
+    }
+
+    // Telefon doğrulama
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      errors.phone = 'Geçerli bir telefon numarası giriniz (10 haneli)';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!validateForm()) {
+      return;
+    }
     
     const token = localStorage.getItem('token');
     const url = editingCustomer 
@@ -139,6 +170,42 @@ function Customers({ userRole }) {
     }
   };
 
+  const filteredCustomers = customers.filter(customer => 
+    customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.phone.includes(searchTerm)
+  );
+
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    
+    const aValue = a[sortConfig.key].toLowerCase();
+    const bValue = b[sortConfig.key].toLowerCase();
+    
+    if (aValue < bValue) {
+      return sortConfig.direction === 'ascending' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortConfig.direction === 'ascending' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCustomers = sortedCustomers.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   if (loading) {
     return <div className="loading-container"><div className="loading-spinner"></div><p>Yükleniyor...</p></div>;
   }
@@ -168,6 +235,16 @@ function Customers({ userRole }) {
         >
           Yeni Müşteri Ekle
         </button>
+      </div>
+
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Müşteri ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
       </div>
 
       <Modal
@@ -211,6 +288,7 @@ function Customers({ userRole }) {
               onChange={handleInputChange}
               required
             />
+            {formErrors.email && <span className="error-text">{formErrors.email}</span>}
           </div>
           <div className="form-group">
             <label htmlFor="phone">Telefon</label>
@@ -222,6 +300,7 @@ function Customers({ userRole }) {
               onChange={handleInputChange}
               required
             />
+            {formErrors.phone && <span className="error-text">{formErrors.phone}</span>}
           </div>
           <div className="form-group">
             <label htmlFor="address">Adres</label>
@@ -250,14 +329,18 @@ function Customers({ userRole }) {
         </form>
       </Modal>
 
-      {customers.length === 0 ? (
+      {filteredCustomers.length === 0 ? (
         <p>Henüz müşteri kaydı bulunmamaktadır.</p>
       ) : (
         <div className="table-container">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Ad</th>
+                <th onClick={() => requestSort('firstName')} className="sortable">
+                  Ad {sortConfig.key === 'firstName' && (
+                    <span>{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
+                  )}
+                </th>
                 <th>Soyad</th>
                 <th>E-posta</th>
                 <th>Telefon</th>
@@ -265,7 +348,7 @@ function Customers({ userRole }) {
               </tr>
             </thead>
             <tbody>
-              {customers.map((customer) => (
+              {currentCustomers.map((customer) => (
                 <tr key={customer.id}>
                   <td>{customer.firstName}</td>
                   <td>{customer.lastName}</td>
@@ -291,6 +374,18 @@ function Customers({ userRole }) {
           </table>
         </div>
       )}
+
+      <div className="pagination">
+        {Array.from({ length: Math.ceil(sortedCustomers.length / itemsPerPage) }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => paginate(index + 1)}
+            className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

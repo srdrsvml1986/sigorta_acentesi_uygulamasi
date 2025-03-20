@@ -3,30 +3,30 @@ const router = express.Router();
 const db = require('../db');
 
 // Tüm sigorta şirketlerini getir
-router.get('/', (req, res, next) => {
-  db.all('SELECT * FROM insurance_companies ORDER BY name ASC', (err, companies) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(companies);
-  });
+router.get('/', async (req, res, next) => {
+  try {
+    const result = await db.query('SELECT * FROM insurance_companies ORDER BY name ASC');
+    res.json(result.rows);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 // ID'ye göre sigorta şirketi getir
-router.get('/:id', (req, res, next) => {
-  db.get('SELECT * FROM insurance_companies WHERE id = ?', [req.params.id], (err, company) => {
-    if (err) {
-      return next(err);
-    }
-    if (!company) {
+router.get('/:id', async (req, res, next) => {
+  try {
+    const result = await db.query('SELECT * FROM insurance_companies WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Sigorta şirketi bulunamadı' });
     }
-    res.json(company);
-  });
+    res.json(result.rows[0]);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 // Yeni sigorta şirketi ekle
-router.post('/', (req, res, next) => {
+router.post('/', async (req, res, next) => {
   const { 
     name, code, contactPerson, phone, email, address, 
     taxNumber, foundationYear, website, commissionRate, 
@@ -38,32 +38,29 @@ router.post('/', (req, res, next) => {
   }
 
   const now = new Date().toISOString();
-  const sql = `INSERT INTO insurance_companies (
-    name, code, contactPerson, phone, email, address, 
-    taxNumber, foundationYear, website, commissionRate, 
-    paymentTerms, contractDate, status, createdAt, updatedAt
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+  const sql = `
+    INSERT INTO insurance_companies (
+      name, code, "contactPerson", phone, email, address, 
+      "taxNumber", "foundationYear", website, "commissionRate", 
+      "paymentTerms", "contractDate", status, "createdAt", "updatedAt"
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    RETURNING *`;
 
-  db.run(sql, [
-    name, code, contactPerson || '', phone, email, address || '',
-    taxNumber || '', foundationYear || null, website || '', commissionRate || null,
-    paymentTerms || '', contractDate || '', status || 'active',
-    now, now
-  ], function(err) {
-    if (err) {
-      return next(err);
-    }
-    db.get('SELECT * FROM insurance_companies WHERE id = ?', [this.lastID], (err, company) => {
-      if (err) {
-        return next(err);
-      }
-      res.status(201).json(company);
-    });
-  });
+  try {
+    const result = await db.query(sql, [
+      name, code, contactPerson || '', phone, email, address || '',
+      taxNumber || '', foundationYear || null, website || '', commissionRate || null,
+      paymentTerms || '', contractDate || '', status || 'active',
+      now, now
+    ]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 // Sigorta şirketi güncelle
-router.put('/:id', (req, res, next) => {
+router.put('/:id', async (req, res, next) => {
   const { 
     name, code, contactPerson, phone, email, address, 
     taxNumber, foundationYear, website, commissionRate, 
@@ -74,58 +71,54 @@ router.put('/:id', (req, res, next) => {
     return res.status(400).json({ message: 'Gerekli alanlar eksik' });
   }
 
-  // Önce şirketin var olup olmadığını kontrol et
-  db.get('SELECT * FROM insurance_companies WHERE id = ?', [req.params.id], (err, company) => {
-    if (err) {
-      return next(err);
-    }
-    if (!company) {
+  try {
+    // Önce şirketin var olup olmadığını kontrol et
+    const checkResult = await db.query('SELECT id FROM insurance_companies WHERE id = $1', [req.params.id]);
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({ message: 'Sigorta şirketi bulunamadı' });
     }
 
     const now = new Date().toISOString();
-    const sql = `UPDATE insurance_companies SET
-      name = ?, code = ?, contactPerson = ?, phone = ?, email = ?, address = ?,
-      taxNumber = ?, foundationYear = ?, website = ?, commissionRate = ?,
-      paymentTerms = ?, contractDate = ?, status = ?, updatedAt = ?
-      WHERE id = ?`;
+    const sql = `
+      UPDATE insurance_companies SET
+        name = $1, code = $2, "contactPerson" = $3, phone = $4, email = $5, address = $6,
+        "taxNumber" = $7, "foundationYear" = $8, website = $9, "commissionRate" = $10,
+        "paymentTerms" = $11, "contractDate" = $12, status = $13, "updatedAt" = $14
+      WHERE id = $15
+      RETURNING *`;
 
-    db.run(sql, [
+    const result = await db.query(sql, [
       name, code, contactPerson || '', phone, email, address || '',
       taxNumber || '', foundationYear || null, website || '', commissionRate || null,
       paymentTerms || '', contractDate || '', status || 'active',
       now, req.params.id
-    ], function(err) {
-      if (err) {
-        return next(err);
-      }
-      db.get('SELECT * FROM insurance_companies WHERE id = ?', [req.params.id], (err, updatedCompany) => {
-        if (err) {
-          return next(err);
-        }
-        res.json(updatedCompany);
-      });
-    });
-  });
+    ]);
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 // Sigorta şirketi sil
-router.delete('/:id', (req, res, next) => {
-  db.get('SELECT * FROM insurance_companies WHERE id = ?', [req.params.id], (err, company) => {
-    if (err) {
-      return next(err);
-    }
-    if (!company) {
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const result = await db.query(
+      'DELETE FROM insurance_companies WHERE id = $1 RETURNING id', 
+      [req.params.id]
+    );
+    
+    if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Sigorta şirketi bulunamadı' });
     }
 
-    db.run('DELETE FROM insurance_companies WHERE id = ?', [req.params.id], function(err) {
-      if (err) {
-        return next(err);
-      }
-      res.json({ message: 'Sigorta şirketi başarıyla silindi', deletedId: req.params.id });
+    res.json({ 
+      message: 'Sigorta şirketi başarıyla silindi', 
+      deletedId: req.params.id 
     });
-  });
+  } catch (err) {
+    return next(err);
+  }
 });
 
 module.exports = router; 

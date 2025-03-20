@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import './styles.css';
 
 function Accounts({ userRole }) {
@@ -9,7 +10,7 @@ function Accounts({ userRole }) {
   const [policies, setPolicies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [formData, setFormData] = useState({
     date: new Date().toISOString().slice(0, 10),
@@ -195,9 +196,8 @@ function Accounts({ userRole }) {
         return;
       }
 
-      // Başarılı işlem sonrası
       await fetchTransactions();
-      setShowForm(false);
+      setIsModalOpen(false);
       resetForm();
     } catch (error) {
       setError('Sunucu hatası.');
@@ -218,7 +218,7 @@ function Accounts({ userRole }) {
       status: transaction.status || 'completed'
     });
     setEditingTransaction(transaction);
-    setShowForm(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (transactionId) => {
@@ -346,17 +346,15 @@ function Accounts({ userRole }) {
     <div className="container">
       <div className="header-actions">
         <h2>Finansal İşlemler</h2>
-        <div>
-          <button 
-            className="btn btn-primary" 
-            onClick={() => {
-              resetForm();
-              setShowForm(!showForm);
-            }}
-          >
-            {showForm ? 'İptal' : 'Yeni İşlem Ekle'}
-          </button>
-        </div>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => {
+            resetForm();
+            setIsModalOpen(true);
+          }}
+        >
+          Yeni İşlem Ekle
+        </button>
       </div>
 
       <div className="summary-cards">
@@ -373,186 +371,6 @@ function Accounts({ userRole }) {
           <div className="summary-amount">{summary.balance.toLocaleString('tr-TR')} TL</div>
         </div>
       </div>
-
-      {showForm && (
-        <div className="form-container">
-          <h3>{editingTransaction ? 'İşlemi Düzenle' : 'Yeni İşlem Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="date">Tarih</label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="type">İşlem Türü</label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="income">Gelir</option>
-                  <option value="expense">Gider</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="category">Kategori</label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Kategori Seçin</option>
-                  {getCategories(formData.type).map(category => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="amount">Tutar (TL)</label>
-                <input
-                  type="number"
-                  id="amount"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="relatedEntityType">İlişkili Varlık Türü</label>
-                <select
-                  id="relatedEntityType"
-                  name="relatedEntityType"
-                  value={formData.relatedEntityType}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Seçin</option>
-                  <option value="customer">Müşteri</option>
-                  <option value="agency">Acente</option>
-                  <option value="insurance_company">Sigorta Şirketi</option>
-                  <option value="policy">Poliçe</option>
-                  <option value="other">Diğer</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="relatedEntityId">İlişkili Varlık</label>
-                <select
-                  id="relatedEntityId"
-                  name="relatedEntityId"
-                  value={formData.relatedEntityId}
-                  onChange={handleInputChange}
-                  disabled={!formData.relatedEntityType || formData.relatedEntityType === 'other'}
-                >
-                  <option value="">Seçin</option>
-                  
-                  {formData.relatedEntityType === 'customer' && customers.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.firstName} {customer.lastName}
-                    </option>
-                  ))}
-                  
-                  {formData.relatedEntityType === 'agency' && agencies.map(agency => (
-                    <option key={agency.id} value={agency.id}>
-                      {agency.name}
-                    </option>
-                  ))}
-                  
-                  {formData.relatedEntityType === 'insurance_company' && insuranceCompanies.map(company => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                  
-                  {formData.relatedEntityType === 'policy' && policies.map(policy => (
-                    <option key={policy.id} value={policy.id}>
-                      {policy.policyNumber}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="paymentMethod">Ödeme Yöntemi</label>
-                <select
-                  id="paymentMethod"
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="cash">Nakit</option>
-                  <option value="bank">Banka</option>
-                  <option value="credit_card">Kredi Kartı</option>
-                  <option value="check">Çek</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="status">Durum</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="completed">Tamamlandı</option>
-                  <option value="pending">Beklemede</option>
-                  <option value="canceled">İptal Edildi</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="description">Açıklama</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-              ></textarea>
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success">
-                {editingTransaction ? 'Güncelle' : 'Ekle'}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
-              >
-                İptal
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       <div className="filter-container">
         <h3>Filtreleme</h3>
@@ -608,6 +426,190 @@ function Accounts({ userRole }) {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingTransaction ? 'İşlem Düzenle' : 'Yeni İşlem Ekle'}
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="date">Tarih</label>
+              <input
+                type="date"
+                id="date"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="type">İşlem Türü</label>
+              <select
+                id="type"
+                name="type"
+                value={formData.type}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="income">Gelir</option>
+                <option value="expense">Gider</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="category">Kategori</label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {getCategories(formData.type).map(category => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="amount">Tutar (TL)</label>
+              <input
+                type="number"
+                id="amount"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="relatedEntityType">İlişkili Varlık Türü</label>
+              <select
+                id="relatedEntityType"
+                name="relatedEntityType"
+                value={formData.relatedEntityType}
+                onChange={handleInputChange}
+              >
+                <option value="">Seçin</option>
+                <option value="customer">Müşteri</option>
+                <option value="agency">Acente</option>
+                <option value="insurance_company">Sigorta Şirketi</option>
+                <option value="policy">Poliçe</option>
+                <option value="other">Diğer</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="relatedEntityId">İlişkili Varlık</label>
+              <select
+                id="relatedEntityId"
+                name="relatedEntityId"
+                value={formData.relatedEntityId}
+                onChange={handleInputChange}
+                disabled={!formData.relatedEntityType || formData.relatedEntityType === 'other'}
+              >
+                <option value="">Seçin</option>
+                
+                {formData.relatedEntityType === 'customer' && customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.firstName} {customer.lastName}
+                  </option>
+                ))}
+                
+                {formData.relatedEntityType === 'agency' && agencies.map(agency => (
+                  <option key={agency.id} value={agency.id}>
+                    {agency.name}
+                  </option>
+                ))}
+                
+                {formData.relatedEntityType === 'insurance_company' && insuranceCompanies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+                
+                {formData.relatedEntityType === 'policy' && policies.map(policy => (
+                  <option key={policy.id} value={policy.id}>
+                    {policy.policyNumber}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="paymentMethod">Ödeme Yöntemi</label>
+              <select
+                id="paymentMethod"
+                name="paymentMethod"
+                value={formData.paymentMethod}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="cash">Nakit</option>
+                <option value="bank">Banka</option>
+                <option value="credit_card">Kredi Kartı</option>
+                <option value="check">Çek</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="status">Durum</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="completed">Tamamlandı</option>
+                <option value="pending">Beklemede</option>
+                <option value="canceled">İptal Edildi</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Açıklama</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-success">
+              {editingTransaction ? 'Güncelle' : 'Ekle'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              İptal
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {filteredTransactions.length === 0 ? (
         <p>Henüz işlem kaydı bulunmamaktadır.</p>

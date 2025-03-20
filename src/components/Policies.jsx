@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import './styles.css'; // Stil dosyasını içe aktaralım
 
 function Policies({ userRole }) {
@@ -8,7 +9,7 @@ function Policies({ userRole }) {
   const [insuranceCompanies, setInsuranceCompanies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState(null);
   const [formData, setFormData] = useState({
     policyNumber: '',
@@ -204,7 +205,7 @@ function Policies({ userRole }) {
       }
 
       await fetchPolicies();
-      setShowForm(false);
+      setIsModalOpen(false);
       resetForm();
     } catch (error) {
       setError('Sunucu hatası.');
@@ -229,7 +230,7 @@ function Policies({ userRole }) {
       description: policy.description || ''
     });
     setEditingPolicy(policy);
-    setShowForm(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (policyId) => {
@@ -298,231 +299,232 @@ function Policies({ userRole }) {
           className="btn btn-primary" 
           onClick={() => {
             resetForm();
-            setShowForm(!showForm);
+            setIsModalOpen(true);
           }}
         >
-          {showForm ? 'İptal' : 'Yeni Poliçe Ekle'}
+          Yeni Poliçe Ekle
         </button>
       </div>
 
-      {showForm && (
-        <div className="form-container">
-          <h3>{editingPolicy ? 'Poliçe Düzenle' : 'Yeni Poliçe Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="policyNumber">Poliçe Numarası</label>
-                <input
-                  type="text"
-                  id="policyNumber"
-                  name="policyNumber"
-                  value={formData.policyNumber}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="type">Poliçe Türü</label>
-                <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Tür Seçin</option>
-                  <option value="Kasko">Kasko</option>
-                  <option value="Trafik">Trafik</option>
-                  <option value="Sağlık">Sağlık</option>
-                  <option value="Konut">Konut</option>
-                  <option value="İşyeri">İşyeri</option>
-                  <option value="Diğer">Diğer</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="customerId">Müşteri</label>
-                <select
-                  id="customerId"
-                  name="customerId"
-                  value={formData.customerId}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Müşteri Seçin</option>
-                  {customers.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.firstName} {customer.lastName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="agencyId">Acente</label>
-                <select
-                  id="agencyId"
-                  name="agencyId"
-                  value={formData.agencyId}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Acente Seçin</option>
-                  {agencies.map(agency => (
-                    <option key={agency.id} value={agency.id}>
-                      {agency.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="insuranceCompanyId">Sigorta Şirketi</label>
-                <select
-                  id="insuranceCompanyId"
-                  name="insuranceCompanyId"
-                  value={formData.insuranceCompanyId}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Şirket Seçin</option>
-                  {insuranceCompanies.map(company => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="status">Durum</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="active">Aktif</option>
-                  <option value="expired">Süresi Dolmuş</option>
-                  <option value="canceled">İptal Edilmiş</option>
-                  <option value="pending">Beklemede</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="startDate">Başlangıç Tarihi</label>
-                <input
-                  type="date"
-                  id="startDate"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="endDate">Bitiş Tarihi</label>
-                <input
-                  type="date"
-                  id="endDate"
-                  name="endDate"
-                  value={formData.endDate}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="premium">Prim Tutarı (TL)</label>
-                <input
-                  type="number"
-                  id="premium"
-                  name="premium"
-                  value={formData.premium}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="commissionRate">Komisyon Oranı (%)</label>
-                <input
-                  type="number"
-                  id="commissionRate"
-                  name="commissionRate"
-                  value={formData.commissionRate}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="100"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="commissionAmount">Komisyon Tutarı (TL)</label>
-                <input
-                  type="number"
-                  id="commissionAmount"
-                  name="commissionAmount"
-                  value={formData.commissionAmount}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  readOnly
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="profit">Kâr (TL)</label>
-                <input
-                  type="number"
-                  id="profit"
-                  name="profit"
-                  value={formData.profit}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingPolicy ? 'Poliçe Düzenle' : 'Yeni Poliçe Ekle'}
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
             <div className="form-group">
-              <label htmlFor="description">Açıklama</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
+              <label htmlFor="policyNumber">Poliçe Numarası</label>
+              <input
+                type="text"
+                id="policyNumber"
+                name="policyNumber"
+                value={formData.policyNumber}
                 onChange={handleInputChange}
-              ></textarea>
+                required
+              />
             </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success">
-                {editingPolicy ? 'Güncelle' : 'Ekle'}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
+            <div className="form-group">
+              <label htmlFor="type">Poliçe Türü</label>
+              <select
+                id="type"
+                name="type"
+                value={formData.type}
+                onChange={handleInputChange}
+                required
               >
-                İptal
-              </button>
+                <option value="">Seçiniz</option>
+                <option value="kasko">Kasko</option>
+                <option value="trafik">Trafik</option>
+                <option value="konut">Konut</option>
+                <option value="saglik">Sağlık</option>
+                <option value="dask">DASK</option>
+                <option value="diger">Diğer</option>
+              </select>
             </div>
-          </form>
-        </div>
-      )}
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="customerId">Müşteri</label>
+              <select
+                id="customerId"
+                name="customerId"
+                value={formData.customerId}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {customers.map(customer => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.firstName} {customer.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="agencyId">Acente</label>
+              <select
+                id="agencyId"
+                name="agencyId"
+                value={formData.agencyId}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {agencies.map(agency => (
+                  <option key={agency.id} value={agency.id}>
+                    {agency.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="insuranceCompanyId">Sigorta Şirketi</label>
+              <select
+                id="insuranceCompanyId"
+                name="insuranceCompanyId"
+                value={formData.insuranceCompanyId}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Seçiniz</option>
+                {insuranceCompanies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="status">Durum</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option value="active">Aktif</option>
+                <option value="passive">Pasif</option>
+                <option value="cancelled">İptal</option>
+                <option value="expired">Süresi Dolmuş</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="startDate">Başlangıç Tarihi</label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="endDate">Bitiş Tarihi</label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="premium">Prim Tutarı (TL)</label>
+              <input
+                type="number"
+                id="premium"
+                name="premium"
+                value={formData.premium}
+                onChange={handleInputChange}
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="commissionRate">Komisyon Oranı (%)</label>
+              <input
+                type="number"
+                id="commissionRate"
+                name="commissionRate"
+                value={formData.commissionRate}
+                onChange={handleInputChange}
+                min="0"
+                max="100"
+                step="0.01"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="commissionAmount">Komisyon Tutarı (TL)</label>
+              <input
+                type="number"
+                id="commissionAmount"
+                name="commissionAmount"
+                value={formData.commissionAmount}
+                readOnly
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profit">Kar (TL)</label>
+              <input
+                type="number"
+                id="profit"
+                name="profit"
+                value={formData.profit}
+                onChange={handleInputChange}
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="description">Açıklama</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-success">
+              {editingPolicy ? 'Güncelle' : 'Ekle'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              İptal
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {policies.length === 0 ? (
         <p>Henüz poliçe kaydı bulunmamaktadır.</p>
@@ -533,13 +535,12 @@ function Policies({ userRole }) {
               <tr>
                 <th>Poliçe No</th>
                 <th>Müşteri</th>
-                <th>Acente</th>
                 <th>Sigorta Şirketi</th>
                 <th>Tür</th>
                 <th>Başlangıç</th>
                 <th>Bitiş</th>
-                <th>Prim (TL)</th>
-                <th>Kar (TL)</th>
+                <th>Prim</th>
+                <th>Komisyon</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
               </tr>
@@ -549,20 +550,17 @@ function Policies({ userRole }) {
                 <tr key={policy.id}>
                   <td>{policy.policyNumber}</td>
                   <td>{getCustomerName(policy.customerId)}</td>
-                  <td>{policy.agencyId ? getAgencyName(policy.agencyId) : '-'}</td>
-                  <td>{policy.insuranceCompanyId ? getInsuranceCompanyName(policy.insuranceCompanyId) : '-'}</td>
-                  <td>{policy.type || 'Belirtilmemiş'}</td>
+                  <td>{getInsuranceCompanyName(policy.insuranceCompanyId)}</td>
+                  <td>{policy.type}</td>
                   <td>{new Date(policy.startDate).toLocaleDateString('tr-TR')}</td>
                   <td>{new Date(policy.endDate).toLocaleDateString('tr-TR')}</td>
-                  <td>{Number(policy.premium).toLocaleString('tr-TR')} TL</td>
-                  <td>{Number(policy.profit || 0).toLocaleString('tr-TR')} TL</td>
+                  <td>{parseFloat(policy.premium).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL</td>
+                  <td>{parseFloat(policy.commissionAmount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL</td>
                   <td>
-                    <span className={`status-badge status-${policy.status}`}>
-                      {policy.status === 'active' && 'Aktif'}
-                      {policy.status === 'expired' && 'Süresi Dolmuş'}
-                      {policy.status === 'canceled' && 'İptal Edilmiş'}
-                      {policy.status === 'pending' && 'Beklemede'}
-                    </span>
+                    {policy.status === 'active' && 'Aktif'}
+                    {policy.status === 'passive' && 'Pasif'}
+                    {policy.status === 'cancelled' && 'İptal'}
+                    {policy.status === 'expired' && 'Süresi Dolmuş'}
                   </td>
                   <td className="actions">
                     <button 

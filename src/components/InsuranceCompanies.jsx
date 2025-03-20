@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import './styles.css';
 
 function InsuranceCompanies({ userRole }) {
   const [companies, setCompanies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -106,9 +107,8 @@ function InsuranceCompanies({ userRole }) {
         return;
       }
 
-      // Başarılı işlem sonrası
       await fetchCompanies();
-      setShowForm(false);
+      setIsModalOpen(false);
       resetForm();
     } catch (error) {
       setError('Sunucu hatası.');
@@ -133,7 +133,7 @@ function InsuranceCompanies({ userRole }) {
       status: company.status || 'active'
     });
     setEditingCompany(company);
-    setShowForm(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (companyId) => {
@@ -187,198 +187,197 @@ function InsuranceCompanies({ userRole }) {
           className="btn btn-primary" 
           onClick={() => {
             resetForm();
-            setShowForm(!showForm);
+            setIsModalOpen(true);
           }}
         >
-          {showForm ? 'İptal' : 'Yeni Şirket Ekle'}
+          Yeni Şirket Ekle
         </button>
       </div>
 
-      {showForm && (
-        <div className="form-container">
-          <h3>{editingCompany ? 'Sigorta Şirketi Düzenle' : 'Yeni Sigorta Şirketi Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="name">Şirket Adı</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="code">Şirket Kodu</label>
-                <input
-                  type="text"
-                  id="code"
-                  name="code"
-                  value={formData.code}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="contactPerson">İlgili Kişi</label>
-                <input
-                  type="text"
-                  id="contactPerson"
-                  name="contactPerson"
-                  value={formData.contactPerson}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="foundationYear">Kuruluş Yılı</label>
-                <input
-                  type="number"
-                  id="foundationYear"
-                  name="foundationYear"
-                  value={formData.foundationYear}
-                  onChange={handleInputChange}
-                  min="1900"
-                  max={new Date().getFullYear()}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="phone">Telefon</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">E-posta</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="taxNumber">Vergi Numarası</label>
-                <input
-                  type="text"
-                  id="taxNumber"
-                  name="taxNumber"
-                  value={formData.taxNumber}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="website">Web Sitesi</label>
-                <input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="commissionRate">Komisyon Oranı (%)</label>
-                <input
-                  type="number"
-                  id="commissionRate"
-                  name="commissionRate"
-                  value={formData.commissionRate}
-                  onChange={handleInputChange}
-                  min="0"
-                  max="100"
-                  step="0.01"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="contractDate">Sözleşme Tarihi</label>
-                <input
-                  type="date"
-                  id="contractDate"
-                  name="contractDate"
-                  value={formData.contractDate}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="paymentTerms">Ödeme Koşulları</label>
-                <input
-                  type="text"
-                  id="paymentTerms"
-                  name="paymentTerms"
-                  value={formData.paymentTerms}
-                  onChange={handleInputChange}
-                  placeholder="Örn: 30 gün vade"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="status">Durum</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="active">Aktif</option>
-                  <option value="passive">Pasif</option>
-                  <option value="suspended">Askıda</option>
-                </select>
-              </div>
-            </div>
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingCompany ? 'Sigorta Şirketi Düzenle' : 'Yeni Sigorta Şirketi Ekle'}
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
             <div className="form-group">
-              <label htmlFor="address">Adres</label>
+              <label htmlFor="name">Şirket Adı</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="code">Şirket Kodu</label>
+              <input
+                type="text"
+                id="code"
+                name="code"
+                value={formData.code}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="contactPerson">İlgili Kişi</label>
+              <input
+                type="text"
+                id="contactPerson"
+                name="contactPerson"
+                value={formData.contactPerson}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="phone">Telefon</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="email">E-posta</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="website">Web Sitesi</label>
+              <input
+                type="url"
+                id="website"
+                name="website"
+                value={formData.website}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Adres</label>
+            <textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="taxNumber">Vergi Numarası</label>
+              <input
+                type="text"
+                id="taxNumber"
+                name="taxNumber"
+                value={formData.taxNumber}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="foundationYear">Kuruluş Yılı</label>
+              <input
+                type="number"
+                id="foundationYear"
+                name="foundationYear"
+                value={formData.foundationYear}
+                onChange={handleInputChange}
+                min="1900"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="commissionRate">Komisyon Oranı (%)</label>
+              <input
+                type="number"
+                id="commissionRate"
+                name="commissionRate"
+                value={formData.commissionRate}
+                onChange={handleInputChange}
+                min="0"
+                max="100"
+                step="0.01"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="contractDate">Sözleşme Tarihi</label>
+              <input
+                type="date"
+                id="contractDate"
+                name="contractDate"
+                value={formData.contractDate}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="paymentTerms">Ödeme Koşulları</label>
               <textarea
-                id="address"
-                name="address"
-                value={formData.address}
+                id="paymentTerms"
+                name="paymentTerms"
+                value={formData.paymentTerms}
                 onChange={handleInputChange}
               ></textarea>
             </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success">
-                {editingCompany ? 'Güncelle' : 'Ekle'}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
+            <div className="form-group">
+              <label htmlFor="status">Durum</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
               >
-                İptal
-              </button>
+                <option value="active">Aktif</option>
+                <option value="passive">Pasif</option>
+              </select>
             </div>
-          </form>
-        </div>
-      )}
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-success">
+              {editingCompany ? 'Güncelle' : 'Ekle'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              İptal
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {companies.length === 0 ? (
         <p>Henüz sigorta şirketi kaydı bulunmamaktadır.</p>
@@ -388,10 +387,10 @@ function InsuranceCompanies({ userRole }) {
             <thead>
               <tr>
                 <th>Şirket Adı</th>
-                <th>Şirket Kodu</th>
+                <th>Kod</th>
                 <th>İlgili Kişi</th>
                 <th>Telefon</th>
-                <th>Komisyon Oranı</th>
+                <th>E-posta</th>
                 <th>Durum</th>
                 <th>İşlemler</th>
               </tr>
@@ -401,16 +400,10 @@ function InsuranceCompanies({ userRole }) {
                 <tr key={company.id}>
                   <td>{company.name}</td>
                   <td>{company.code}</td>
-                  <td>{company.contactPerson || '-'}</td>
+                  <td>{company.contactPerson}</td>
                   <td>{company.phone}</td>
-                  <td>{company.commissionRate ? `%${company.commissionRate}` : '-'}</td>
-                  <td>
-                    <span className={`status-badge status-${company.status}`}>
-                      {company.status === 'active' && 'Aktif'}
-                      {company.status === 'passive' && 'Pasif'}
-                      {company.status === 'suspended' && 'Askıda'}
-                    </span>
-                  </td>
+                  <td>{company.email}</td>
+                  <td>{company.status === 'active' ? 'Aktif' : 'Pasif'}</td>
                   <td className="actions">
                     <button 
                       className="btn btn-edit" 

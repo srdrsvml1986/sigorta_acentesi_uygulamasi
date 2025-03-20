@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Modal from './Modal';
 import './styles.css';
 
 function Agencies({ userRole }) {
   const [agencies, setAgencies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAgency, setEditingAgency] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -104,7 +105,7 @@ function Agencies({ userRole }) {
 
       // Başarılı işlem sonrası
       await fetchAgencies();
-      setShowForm(false);
+      setIsModalOpen(false);
       resetForm();
     } catch (error) {
       setError('Sunucu hatası.');
@@ -127,7 +128,7 @@ function Agencies({ userRole }) {
       status: agency.status || 'active'
     });
     setEditingAgency(agency);
-    setShowForm(true);
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (agencyId) => {
@@ -181,173 +182,174 @@ function Agencies({ userRole }) {
           className="btn btn-primary" 
           onClick={() => {
             resetForm();
-            setShowForm(!showForm);
+            setIsModalOpen(true);
           }}
         >
-          {showForm ? 'İptal' : 'Yeni Acente Ekle'}
+          Yeni Acente Ekle
         </button>
       </div>
 
-      {showForm && (
-        <div className="form-container">
-          <h3>{editingAgency ? 'Acente Düzenle' : 'Yeni Acente Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="name">Acente Adı</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="code">Acente Kodu</label>
-                <input
-                  type="text"
-                  id="code"
-                  name="code"
-                  value={formData.code}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="ownerName">Acente Sahibi</label>
-                <input
-                  type="text"
-                  id="ownerName"
-                  name="ownerName"
-                  value={formData.ownerName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="foundationYear">Kuruluş Yılı</label>
-                <input
-                  type="number"
-                  id="foundationYear"
-                  name="foundationYear"
-                  value={formData.foundationYear}
-                  onChange={handleInputChange}
-                  min="1900"
-                  max={new Date().getFullYear()}
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="phone">Telefon</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">E-posta</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="taxNumber">Vergi Numarası</label>
-                <input
-                  type="text"
-                  id="taxNumber"
-                  name="taxNumber"
-                  value={formData.taxNumber}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="employeeCount">Çalışan Sayısı</label>
-                <input
-                  type="number"
-                  id="employeeCount"
-                  name="employeeCount"
-                  value={formData.employeeCount}
-                  onChange={handleInputChange}
-                  min="0"
-                />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="website">Web Sitesi</label>
-                <input
-                  type="url"
-                  id="website"
-                  name="website"
-                  value={formData.website}
-                  onChange={handleInputChange}
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="status">Durum</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="active">Aktif</option>
-                  <option value="passive">Pasif</option>
-                  <option value="suspended">Askıda</option>
-                </select>
-              </div>
-            </div>
-
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingAgency ? 'Acente Düzenle' : 'Yeni Acente Ekle'}
+      >
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
             <div className="form-group">
-              <label htmlFor="address">Adres</label>
-              <textarea
-                id="address"
-                name="address"
-                value={formData.address}
+              <label htmlFor="name">Acente Adı</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleInputChange}
-              ></textarea>
+                required
+              />
             </div>
+            <div className="form-group">
+              <label htmlFor="code">Acente Kodu</label>
+              <input
+                type="text"
+                id="code"
+                name="code"
+                value={formData.code}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
 
-            <div className="form-actions">
-              <button type="submit" className="btn btn-success">
-                {editingAgency ? 'Güncelle' : 'Ekle'}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={() => {
-                  setShowForm(false);
-                  resetForm();
-                }}
-              >
-                İptal
-              </button>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="ownerName">Acente Sahibi</label>
+              <input
+                type="text"
+                id="ownerName"
+                name="ownerName"
+                value={formData.ownerName}
+                onChange={handleInputChange}
+                required
+              />
             </div>
-          </form>
-        </div>
-      )}
+            <div className="form-group">
+              <label htmlFor="foundationYear">Kuruluş Yılı</label>
+              <input
+                type="number"
+                id="foundationYear"
+                name="foundationYear"
+                value={formData.foundationYear}
+                onChange={handleInputChange}
+                min="1900"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="phone">Telefon</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">E-posta</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Adres</label>
+            <textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+            ></textarea>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="taxNumber">Vergi Numarası</label>
+              <input
+                type="text"
+                id="taxNumber"
+                name="taxNumber"
+                value={formData.taxNumber}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="employeeCount">Çalışan Sayısı</label>
+              <input
+                type="number"
+                id="employeeCount"
+                name="employeeCount"
+                value={formData.employeeCount}
+                onChange={handleInputChange}
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="website">Web Sitesi</label>
+              <input
+                type="url"
+                id="website"
+                name="website"
+                value={formData.website}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="status">Durum</label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option value="active">Aktif</option>
+                <option value="passive">Pasif</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn btn-success">
+              {editingAgency ? 'Güncelle' : 'Ekle'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              İptal
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {agencies.length === 0 ? (
         <p>Henüz acente kaydı bulunmamaktadır.</p>
@@ -357,8 +359,8 @@ function Agencies({ userRole }) {
             <thead>
               <tr>
                 <th>Acente Adı</th>
-                <th>Acente Kodu</th>
-                <th>Acente Sahibi</th>
+                <th>Kod</th>
+                <th>Sahibi</th>
                 <th>Telefon</th>
                 <th>E-posta</th>
                 <th>Durum</th>
@@ -373,13 +375,7 @@ function Agencies({ userRole }) {
                   <td>{agency.ownerName}</td>
                   <td>{agency.phone}</td>
                   <td>{agency.email}</td>
-                  <td>
-                    <span className={`status-badge status-${agency.status}`}>
-                      {agency.status === 'active' && 'Aktif'}
-                      {agency.status === 'passive' && 'Pasif'}
-                      {agency.status === 'suspended' && 'Askıda'}
-                    </span>
-                  </td>
+                  <td>{agency.status === 'active' ? 'Aktif' : 'Pasif'}</td>
                   <td className="actions">
                     <button 
                       className="btn btn-edit" 
