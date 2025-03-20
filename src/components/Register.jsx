@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('agent');
+  const [role, setRole] = useState('admin');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
