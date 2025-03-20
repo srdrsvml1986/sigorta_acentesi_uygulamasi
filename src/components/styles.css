@@ -34,6 +34,7 @@
   --text-light: #7c8a97;
   --white: #ffffff;
   --black: #000000;
+  --error-text: #ff0000;
   
   /* Gölgeler */
   --box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
@@ -687,4 +688,12 @@
   color: #666;
   font-size: 14px;
   margin-top: 10px;
+}
+
+/* Hata Mesajı Stili */
+.error-text {
+  color: var(--error-text);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
 } 
