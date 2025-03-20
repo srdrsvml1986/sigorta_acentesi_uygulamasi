@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 function InsuranceCompanies({ userRole }) {
@@ -92,9 +94,29 @@ function InsuranceCompanies({ userRole }) {
     setEditingCompany(null);
   };
 
+  const validateForm = () => {
+    // Implement form validation logic here
+    return true; // Placeholder return, actual implementation needed
+  };
+
+  const showToast = (type, message) => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!validateForm()) {
+      return;
+    }
     
     const token = localStorage.getItem('token');
     const url = editingCompany 
@@ -114,14 +136,17 @@ function InsuranceCompanies({ userRole }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'İşlem başarısız oldu.');
+        showToast('error', errorData.message || 'İşlem başarısız oldu.');
         return;
       }
 
       await fetchCompanies();
       setIsModalOpen(false);
       resetForm();
+      showToast('success', editingCompany ? 'Sigorta şirketi başarıyla güncellendi.' : 'Sigorta şirketi başarıyla eklendi.');
     } catch (error) {
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Form submission error:', error);
     }
   };
@@ -163,13 +188,16 @@ function InsuranceCompanies({ userRole }) {
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'Sigorta şirketi silinemedi.');
+        showToast('error', errorData.message || 'Sigorta şirketi silinemedi.');
         return;
       }
 
       await fetchCompanies();
+      showToast('success', 'Sigorta şirketi başarıyla silindi.');
     } catch (error) {
       setError('Sunucu hatası.');
-      console.error('Insurance company delete error:', error);
+      showToast('error', 'Sunucu hatası.');
+      console.error('Company delete error:', error);
     }
   };
 
@@ -223,6 +251,7 @@ function InsuranceCompanies({ userRole }) {
 
   return (
     <div className="container">
+      <ToastContainer />
       <div className="header-actions">
         <h2>Sigorta Şirketleri</h2>
         <button 

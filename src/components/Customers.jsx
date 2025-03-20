@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './styles.css'; // Stil dosyasını içe aktaralım
 
 function Customers({ userRole }) {
@@ -122,6 +124,12 @@ function Customers({ userRole }) {
       ? `/api/v1/customers/${editingCustomer.id}` 
       : '/api/v1/customers';
     
+    // Form verilerini kopyala ve boş doğum tarihini kontrol et
+    const submissionData = { ...formData };
+    if (!submissionData.birth_date.trim()) {
+      delete submissionData.birth_date;
+    }
+    
     try {
       const response = await fetch(url, {
         method: editingCustomer ? 'PUT' : 'POST',
@@ -129,20 +137,27 @@ function Customers({ userRole }) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submissionData)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        // Hata mesajını göster ama modalı kapatma
         setError(errorData.message || 'İşlem başarısız oldu.');
+        // Toast bildirimini göster
+        showToast('error', errorData.message || 'İşlem başarısız oldu.');
         return;
       }
 
+      // Başarılı durumda modalı kapat ve başarı mesajını göster
       await fetchCustomers();
       setIsModalOpen(false);
       resetForm();
+      showToast('success', editingCustomer ? 'Müşteri başarıyla güncellendi.' : 'Müşteri başarıyla eklendi.');
     } catch (error) {
+      // Hata durumunda modalı kapatma ve hata mesajını göster
       setError('Sunucu hatası.');
+      showToast('error', 'Sunucu hatası.');
       console.error('Form submission error:', error);
     }
   };
@@ -247,6 +262,18 @@ function Customers({ userRole }) {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // Toast bildirimi gösterme fonksiyonu
+  const showToast = (type, message) => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  };
+
   if (loading) {
     return <div className="loading-container"><div className="loading-spinner"></div><p>Yükleniyor...</p></div>;
   }
@@ -265,6 +292,7 @@ function Customers({ userRole }) {
 
   return (
     <div className="container">
+      <ToastContainer />
       <div className="header-actions">
         <h2>Müşteriler</h2>
         <button 

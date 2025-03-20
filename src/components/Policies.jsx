@@ -3,6 +3,9 @@ import { Table, Button, Modal, Form, Input, DatePicker, message, Select, InputNu
 import moment from 'moment';
 import { EditOutlined, DeleteOutlined, FileProtectOutlined } from '@ant-design/icons';
 import api from '../utils/api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles.css';
 
 const { Option } = Select;
 
@@ -25,6 +28,7 @@ const Policies = () => {
     status: true
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [error, setError] = useState('');
 
   const initialFormData = {
     policy_number: '',
@@ -125,18 +129,46 @@ const Policies = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Bu poliçeyi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
     try {
+      const token = localStorage.getItem('token');
       const response = await api.fetch(`/api/v1/policies/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+
       if (!response.ok) {
-        throw new Error('Poliçe silinemedi');
+        const errorData = await response.json();
+        setError(errorData.message || 'Poliçe silinemedi.');
+        toast.error(errorData.message || 'Poliçe silinemedi.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
       }
-      message.success('Poliçe başarıyla silindi');
-      fetchPolicies();
+
+      await fetchPolicies();
+      toast.success('Poliçe başarıyla silindi.');
     } catch (error) {
-      message.error('Poliçe silinirken hata oluştu');
-      console.error('Poliçe silme hatası:', error);
+      setError('Sunucu hatası.');
+      toast.error('Sunucu hatası.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      console.error('Policy delete error:', error);
     }
   };
 
@@ -149,12 +181,14 @@ const Policies = () => {
         end_date: values.end_date.format('YYYY-MM-DD')
       };
 
+      const token = localStorage.getItem('token');
       const response = await api.fetch(
         editingPolicy ? `/api/v1/policies/${editingPolicy.id}` : '/api/v1/policies',
         {
           method: editingPolicy ? 'PUT' : 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(formattedValues)
         }
@@ -162,15 +196,32 @@ const Policies = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'İşlem başarısız');
+        setError(errorData.message || 'İşlem başarısız oldu.');
+        toast.error(errorData.message || 'İşlem başarısız oldu.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        return;
       }
 
-      message.success(editingPolicy ? 'Poliçe başarıyla güncellendi' : 'Poliçe başarıyla oluşturuldu');
+      await fetchPolicies();
       setModalVisible(false);
       form.resetFields();
-      fetchPolicies();
+      toast.success(editingPolicy ? 'Poliçe başarıyla güncellendi' : 'Poliçe başarıyla oluşturuldu');
     } catch (error) {
-      message.error(error.message || 'İşlem sırasında hata oluştu');
+      setError('Sunucu hatası.');
+      toast.error('Sunucu hatası.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       console.error('Form gönderme hatası:', error);
     }
   };
@@ -317,6 +368,7 @@ const Policies = () => {
 
   return (
     <div style={{ padding: '24px' }}>
+      <ToastContainer />
       <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0 }}>
           <FileProtectOutlined /> Poliçeler
