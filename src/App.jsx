@@ -120,7 +120,7 @@ function App() {
             path="/customers"
             element={
               <ProtectedRoute>
-                <Customers userRole={userRole} />
+                <Customers  />
               </ProtectedRoute>
             }
           />
@@ -128,7 +128,7 @@ function App() {
             path="/policies"
             element={
               <ProtectedRoute>
-                <Policies userRole={userRole} />
+                <Policies  />
               </ProtectedRoute>
             }
           />
@@ -136,7 +136,7 @@ function App() {
             path="/agencies"
             element={
               <ProtectedRoute>
-                <Agencies userRole={userRole} />
+                <Agencies  />
               </ProtectedRoute>
             }
           />
@@ -144,7 +144,7 @@ function App() {
             path="/insurance-companies"
             element={
               <ProtectedRoute>
-                <InsuranceCompanies userRole={userRole} />
+                <InsuranceCompanies  />
               </ProtectedRoute>
             }
           />
@@ -152,7 +152,7 @@ function App() {
             path="/accounts"
             element={
               <ProtectedRoute>
-                <Accounts userRole={userRole} />
+                <Accounts  />
               </ProtectedRoute>
             }
           />

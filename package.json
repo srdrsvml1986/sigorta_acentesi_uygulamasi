@@ -50,5 +50,15 @@
   "presets": [
     "@babel/preset-env",
     "@babel/preset-react"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srdrsvml1986/sigorta_acentesi_uygulamasi.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/srdrsvml1986/sigorta_acentesi_uygulamasi/issues"
+  },
+  "homepage": "https://github.com/srdrsvml1986/sigorta_acentesi_uygulamasi#readme"
 }
