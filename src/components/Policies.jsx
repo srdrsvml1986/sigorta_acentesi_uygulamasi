@@ -9,7 +9,7 @@ import './styles.css';
 
 const { Option } = Select;
 
-const Policies = () => {
+const Policies = ({ userRole }) => {
   const [policies, setPolicies] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [agencies, setAgencies] = useState([]);
@@ -357,6 +357,14 @@ const Policies = () => {
     
     return matchConditions.some(condition => condition);
   });
+
+  if (!userRole) {
+    return <div className="access-denied">Erişim izniniz yok.</div>;
+  }
+
+  if (userRole !== 'admin' && userRole !== 'manager') {
+    return <div className="access-denied">Bu sayfayı görüntüleme yetkiniz yok.</div>;
+  }
 
   return (
     <div style={{ padding: '24px' }}>
