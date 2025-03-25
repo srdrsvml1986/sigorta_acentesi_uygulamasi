@@ -5,6 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 function Agencies({ userRole }) {
+  console.log("userRole Agencies.jsx", userRole);
+  console.log('Gelen userRole değeri:', userRole);
+  console.log('userRole tipi:', typeof userRole);
   const [agencies, setAgencies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);

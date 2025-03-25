@@ -10,6 +10,9 @@ import './styles.css';
 const { Option } = Select;
 
 const Policies = ({ userRole }) => {
+  console.log("userRole Policies.jsx", userRole);
+  console.log('Gelen userRole değeri:', userRole);
+  console.log('userRole tipi:', typeof userRole);
   const [policies, setPolicies] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [agencies, setAgencies] = useState([]);

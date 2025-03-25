@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css'; // Stil dosyasını içe aktaralım
 
 function Customers({ userRole }) {
+  console.log("userRole Customers.jsx", userRole);
   console.log('Gelen userRole değeri:', userRole);
   console.log('userRole tipi:', typeof userRole);
 

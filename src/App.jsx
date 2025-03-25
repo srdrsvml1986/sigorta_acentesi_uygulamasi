@@ -58,8 +58,7 @@ function App() {
   // Korumalı route bileşeni
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    setUserRole(role);
+    console.log("userRole App.jsx", userRole);
     if (!token) {
       return <Navigate to="/login" />;
     }

@@ -5,6 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 function InsuranceCompanies({ userRole }) {
+  console.log("userRole InsuranceCompanies.jsx", userRole);
+  console.log('Gelen userRole değeri:', userRole);
+  console.log('userRole tipi:', typeof userRole);
   const [companies, setCompanies] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);

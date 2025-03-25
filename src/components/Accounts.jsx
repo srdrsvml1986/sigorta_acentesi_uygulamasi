@@ -5,6 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 function Accounts({ userRole }) {
+  console.log("userRole Accounts.jsx", userRole);
+  console.log('Gelen userRole değeri:', userRole);
+  console.log('userRole tipi:', typeof userRole);
   const [transactions, setTransactions] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [agencies, setAgencies] = useState([]);
