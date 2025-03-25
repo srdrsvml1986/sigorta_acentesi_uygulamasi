@@ -40,7 +40,7 @@ function App() {
     localStorage.setItem("role", role);
     setIsLoggedIn(true);
     setUserRole(role);
-    navigate("/customers");
+    navigate("/accounts");
   };
 
   const handleLogout = () => {
@@ -58,6 +58,8 @@ function App() {
   // Korumalı route bileşeni
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    setUserRole(role);
     if (!token) {
       return <Navigate to="/login" />;
     }
