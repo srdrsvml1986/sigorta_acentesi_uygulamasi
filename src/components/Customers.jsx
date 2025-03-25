@@ -5,6 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css'; // Stil dosyasını içe aktaralım
 
 function Customers({ userRole }) {
+  console.log('Gelen userRole değeri:', userRole);
+  console.log('userRole tipi:', typeof userRole);
+
   const [customers, setCustomers] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -286,10 +289,12 @@ function Customers({ userRole }) {
   }
 
   if (!userRole) {
+    console.log('userRole boş geldi');
     return <div className="access-denied">Erişim izniniz yok.</div>;
   }
 
   if (userRole !== 'admin' && userRole !== 'manager') {
+    console.log('userRole eşleşmedi:', userRole);
     return <div className="access-denied">Bu sayfayı görüntüleme yetkiniz yok.</div>;
   }
 
